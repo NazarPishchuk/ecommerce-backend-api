@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="ECommerce.Api/ECommerce.Api.csproj" />
+  <Project Path="ECommerce.Application/ECommerce.Application.csproj" Id="5f00a1bc-0e69-4c87-888a-7fc234192300" />
+  <Project Path="ECommerce.Domain/ECommerce.Domain.csproj" Id="02ecb849-92d5-47ed-ba2e-d983d116c2e9" />
+  <Project Path="ECommerce.Infrastructure/ECommerce.Infrastructure.csproj" Id="656d5bca-e94d-42d7-9de0-e3286ea19e61" />
+</Solution>
