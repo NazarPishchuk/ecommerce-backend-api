@@ -34,7 +34,7 @@ Built with **ASP.NET Core**, **Entity Framework Core**, and **Microsoft SQL Serv
 
 ## 📌 Overview
 
-**E-Commerce Backend API** is a backend for a multi-vendor e-commerce platform, designed around three actors — **Customer**, **Seller**, and **Admin**. The solution is organized into a layered architecture (`ECommerce.Api`, `ECommerce.Application`, `ECommerce.Domain`, `ECommerce.Infrastructure`) with explicit dependency boundaries between HTTP concerns, application logic, domain rules, and persistence.
+**E-Commerce Backend API** is a backend for a multi-vendor e-commerce platform, designed around three actors — **Customer**, **Seller**, and **Admin**. The solution is organized into a layered architecture (`ECommerce.Api`, `ECommerce.Application`, `ECommerce.Domain`, `ECommerce.Infrastructure`) with explicit dependency boundaries between HTTP concerns, application workflows, the domain model, and persistence.
 
 The project is currently focused on establishing a solid domain model and persistence foundation. API endpoints, authentication, and the remaining marketplace workflows are being built out incrementally on top of that foundation — see [Roadmap](#-roadmap) for what's next.
 
@@ -87,8 +87,8 @@ flowchart TD
 - **ORM:** Entity Framework Core (SQL Server provider)
 - **Identity:** ASP.NET Core Identity
 - **Database:** Microsoft SQL Server
-- **API Docs:** Native OpenAPI document generation (`Microsoft.AspNetCore.OpenApi`), Development environment only — no Swagger UI is included
-- **Source Control:** Git
+- **API Docs:** OpenAPI (`Microsoft.AspNetCore.OpenApi`)
+- **Source Control:** Git & GitHub
 
 ---
 
@@ -171,8 +171,8 @@ An `OrderStatus` enum (`Pending`, `Paid`, `Processing`, `Shipped`, `Delivered`, 
 ### Installation
 
 ```bash
-git clone https://github.com/<your-username>/ECommerce.Api.git
-cd ECommerce.Api
+git clone https://github.com/NazarPishchuk/ecommerce-backend-api.git
+cd ecommerce-backend-api
 dotnet restore
 ```
 
@@ -207,10 +207,10 @@ By default the API listens on `http://localhost:5216` and `https://localhost:703
 The platform is designed around three primary roles. They currently exist as an authorization/domain concept rather than fully implemented API workflows:
 
 ### 🧑‍💻 Customer
-Browses the catalog and places orders. Represented by a standard `ApplicationUser`, linked to a `Cart` and `Order` history.
+Intended to browse the catalog, manage a shopping cart, and place orders. Represented by a standard `ApplicationUser`, linked to a `Cart` and `Order` history.
 
 ### 🏪 Seller
-Manages a store and product listings. Represented by a `SellerProfile` linked one-to-one to an `ApplicationUser`.
+Intended to manage a seller profile, product listings, and inventory. Represented by a `SellerProfile` linked one-to-one to an `ApplicationUser`.
 
 ### 🛡️ Admin
 Intended to manage users, sellers, and platform-level moderation. Not yet represented by a dedicated entity — planned to be modeled through ASP.NET Core Identity roles.
@@ -230,7 +230,7 @@ JWT-based API authentication and role/policy enforcement have not been implement
 - Separation of concerns across API, Application, Domain, and Infrastructure layers
 - SOLID principles and dependency inversion
 - Explicit, intentional dependency boundaries between projects
-- Relational data integrity — keys, constraints, indexes, and delete behavior configured via EF Core Fluent API
+- Relational data integrity managed through EF Core conventions and explicit Fluent API configuration
 - Secure, environment-based configuration (no secrets in source control)
 - A structure intended to stay testable and extensible as functionality is added
 
@@ -253,3 +253,4 @@ JWT-based API authentication and role/policy enforcement have not been implement
 - [ ] Response caching
 - [ ] Asynchronous messaging
 - [ ] CI/CD pipeline
+- [ ] Seller profile and product ownership workflows
