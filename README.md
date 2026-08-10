@@ -171,8 +171,8 @@ An `OrderStatus` enum (`Pending`, `Paid`, `Processing`, `Shipped`, `Delivered`, 
 ### Installation
 
 ```bash
-git clone https://github.com/<your-username>/ECommerce.Api.git
-cd ECommerce.Api
+git clone https://github.com/NazarPishchuk/ecommerce-backend-api.git
+cd ecommerce-backend-api
 dotnet restore
 ```
 
@@ -253,3 +253,4 @@ JWT-based API authentication and role/policy enforcement have not been implement
 - [ ] Response caching
 - [ ] Asynchronous messaging
 - [ ] CI/CD pipeline
+- [ ] Seller profile and product ownership workflows
