@@ -1,4 +1,5 @@
-﻿using ECommerce.Domain.Entities;
+﻿using ECommerce.Application.Interfaces;
+using ECommerce.Domain.Entities;
 using ECommerce.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Persistence;
 
-public class ECommerceDbContext : IdentityDbContext<ApplicationUser>
+public class ECommerceDbContext : IdentityDbContext<ApplicationUser>, IUnitOfWork
 {
     public ECommerceDbContext(DbContextOptions<ECommerceDbContext> options)
         : base(options) 

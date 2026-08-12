@@ -12,6 +12,6 @@ public class CartItemConfiguration : IEntityTypeConfiguration<CartItem>
             .HasOne(x => x.Product)
             .WithMany()
             .HasForeignKey(x => x.ProductId)
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

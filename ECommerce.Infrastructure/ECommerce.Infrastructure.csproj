@@ -24,8 +24,4 @@
     <ProjectReference Include="..\ECommerce.Domain\ECommerce.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Configurations\" />
-  </ItemGroup>
-
 </Project>
