@@ -12,6 +12,9 @@ public class OrderItemConfiguration : IEntityTypeConfiguration<OrderItem>
             .HasOne(x => x.Product)
             .WithMany()
             .HasForeignKey(x => x.ProductId)
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(x => x.UnitPrice)
+            .HasPrecision(18, 2);
     }
 }
