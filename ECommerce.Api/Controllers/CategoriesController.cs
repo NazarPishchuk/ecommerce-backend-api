@@ -1,4 +1,5 @@
-﻿using ECommerce.Application.DTOs.Categories;
+﻿using ECommerce.Api.Controllers;
+using ECommerce.Application.DTOs.Categories;
 using ECommerce.Application.Interfaces;
 using ECommerce.Application.Results;
 using Microsoft.AspNetCore.Http;
@@ -6,10 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace E_Commerce_API.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/categories")]
 [ApiController]
 public class CategoriesController(
-       ICategoryService categoryService) : ControllerBase
+       ICategoryService categoryService) : ApiControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<GetCategoryDto>>> GetAllAsync()
@@ -72,26 +73,6 @@ public class CategoriesController(
         }
 
         return NoContent();
-    }
-    private ActionResult MapError(Error error)
-    {
-        return error.Type switch
-        {
-            ErrorType.NotFound =>
-                NotFound(error),
-
-            ErrorType.Conflict =>
-                Conflict(error),
-
-            ErrorType.Validation =>
-                BadRequest(error),
-
-            ErrorType.Forbidden =>
-                StatusCode(StatusCodes.Status403Forbidden, error),
-
-            _ =>
-                StatusCode(StatusCodes.Status500InternalServerError, error)
-        };
     }
 }
 
