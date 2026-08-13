@@ -1,6 +1,7 @@
 ﻿using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
 using ECommerce.Infrastructure.Identity;
+using ECommerce.Infrastructure.Persistence.Outbox;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +14,12 @@ public class ECommerceDbContext : IdentityDbContext<ApplicationUser>, IUnitOfWor
         : base(options) 
     { 
     }
+    public async Task<ITransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        var transaction = await Database.BeginTransactionAsync(cancellationToken);
+
+        return new EfTransaction(transaction);
+    }
 
     public DbSet<Product> Products { get; set; }
     public DbSet<Category> Categories { get; set; }
@@ -21,6 +28,8 @@ public class ECommerceDbContext : IdentityDbContext<ApplicationUser>, IUnitOfWor
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
     public DbSet<SellerProfile> SellerProfiles { get; set; }
+    public DbSet<OutboxMessage> OutboxMessages { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
