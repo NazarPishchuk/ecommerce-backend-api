@@ -6,15 +6,25 @@ using ECommerce.Infrastructure.Identity;
 using ECommerce.Infrastructure.Persistence;
 using ECommerce.Infrastructure.Persistence.Outbox;
 using ECommerce.Infrastructure.Persistence.Repositories;
+using ECommerce.Infrastructure.Persistence.Seeding;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 using System.Text;
-using ECommerce.Infrastructure.Persistence.Seeding;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, configuration) =>
+{
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .Enrich.FromLogContext()
+        .WriteTo.Console()
+        .WriteTo.Seq("http://localhost:5341");
+});
 
 // Add services to the container.
 
@@ -158,6 +168,8 @@ if (app.Environment.IsDevelopment())
 
     await adminSeeder.SeedAsync();
 }
+
+app.UseSerilogRequestLogging();
 
 app.UseHttpsRedirection();
 
