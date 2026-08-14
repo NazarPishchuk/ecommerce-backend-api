@@ -1,0 +1,18 @@
+services:
+  seq:
+    image: datalust/seq:latest
+    container_name: ecommerce-seq
+
+    ports:
+      - "5341:80"
+
+    environment:
+      ACCEPT_EULA: "Y"
+
+    volumes:
+      - seq_data:/data
+
+    restart: unless-stopped
+
+volumes:
+  seq_data:
