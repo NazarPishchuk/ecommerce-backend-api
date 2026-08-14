@@ -1,7 +1,6 @@
 ﻿using ECommerce.Application.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 
 namespace ECommerce.Infrastructure.Persistence.Seeding;
 
