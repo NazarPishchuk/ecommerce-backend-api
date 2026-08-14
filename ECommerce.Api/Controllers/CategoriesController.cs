@@ -1,15 +1,16 @@
 ﻿using ECommerce.Application.DTOs.Categories;
 using ECommerce.Application.Interfaces;
-using ECommerce.Application.Results;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using ECommerce.Application.Authorization;
+using Microsoft.AspNetCore.Authorization;
 
-namespace E_Commerce_API.Controllers;
+namespace ECommerce.Api.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/categories")]
 [ApiController]
+
 public class CategoriesController(
-       ICategoryService categoryService) : ControllerBase
+       ICategoryService categoryService) : ApiControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<GetCategoryDto>>> GetAllAsync()
@@ -33,6 +34,7 @@ public class CategoriesController(
     }
 
     [HttpPost]
+    [Authorize(Roles = AppRoles.Admin)]
     public async Task<ActionResult<GetCategoryDto>> CreateAsync(CreateCategoryDto dto)
     {
         var result = await categoryService.CreateAsync(dto);
@@ -49,6 +51,7 @@ public class CategoriesController(
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = AppRoles.Admin)]
     public async Task<IActionResult> UpdateAsync(int id, UpdateCategoryDto dto)
     {
         var result = await categoryService.UpdateAsync(id, dto);
@@ -62,6 +65,7 @@ public class CategoriesController(
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = AppRoles.Admin)]
     public async Task<IActionResult> DeleteAsync(int id)
     {
         var result = await categoryService.DeleteAsync(id);
@@ -72,26 +76,6 @@ public class CategoriesController(
         }
 
         return NoContent();
-    }
-    private ActionResult MapError(Error error)
-    {
-        return error.Type switch
-        {
-            ErrorType.NotFound =>
-                NotFound(error),
-
-            ErrorType.Conflict =>
-                Conflict(error),
-
-            ErrorType.Validation =>
-                BadRequest(error),
-
-            ErrorType.Forbidden =>
-                StatusCode(StatusCodes.Status403Forbidden, error),
-
-            _ =>
-                StatusCode(StatusCodes.Status500InternalServerError, error)
-        };
     }
 }
 

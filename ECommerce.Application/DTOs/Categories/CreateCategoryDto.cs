@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ECommerce.Application.DTOs.Categories;
+﻿namespace ECommerce.Application.DTOs.Categories;
 
 public class CreateCategoryDto
 {

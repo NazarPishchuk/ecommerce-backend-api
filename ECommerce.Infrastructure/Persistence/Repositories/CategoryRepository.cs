@@ -1,9 +1,6 @@
 ﻿using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ECommerce.Infrastructure.Persistence.Repositories;
 
