@@ -9,8 +9,7 @@ public interface IIdentityService
                                 string lastName,
                                 string email,
                                 string password,
-                                string role);
-                                
+                                string role);        
     Task<Result<string>> ValidateCredentialsAsync(
                                 string email,
                                 string password);

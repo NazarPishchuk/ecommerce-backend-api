@@ -33,7 +33,6 @@ public sealed class IdentityService(
 
         var createResult = await userManager.CreateAsync(user, password);
 
-
         if (!createResult.Succeeded)
         {
             var errorMessage = string.Join(

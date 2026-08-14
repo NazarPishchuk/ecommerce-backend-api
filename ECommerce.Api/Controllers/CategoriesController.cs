@@ -1,11 +1,8 @@
-﻿using ECommerce.Api.Controllers;
-using ECommerce.Application.DTOs.Categories;
+﻿using ECommerce.Application.DTOs.Categories;
 using ECommerce.Application.Interfaces;
-using ECommerce.Application.Results;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace E_Commerce_API.Controllers;
+namespace ECommerce.Api.Controllers;
 
 [Route("api/categories")]
 [ApiController]

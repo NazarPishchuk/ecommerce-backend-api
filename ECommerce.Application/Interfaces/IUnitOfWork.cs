@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ECommerce.Application.Interfaces;
+﻿namespace ECommerce.Application.Interfaces;
 
 public interface IUnitOfWork
 {
