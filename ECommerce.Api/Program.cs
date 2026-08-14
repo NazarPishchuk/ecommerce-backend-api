@@ -117,7 +117,23 @@ builder.Services.AddAutoMapper(
     cfg => { },
     typeof(CategoryMappingProfile));
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services
+        .AddOptions<SeedAdminOptions>()
+        .Bind(
+            builder.Configuration.GetSection(
+                SeedAdminOptions.SectionName))
+        .Validate(
+            options => !string.IsNullOrWhiteSpace(options.Email),
+            "Seed admin email is required.")
+        .Validate(
+            options => !string.IsNullOrWhiteSpace(options.Password),
+            "Seed admin password is required.")
+        .ValidateOnStart();
 
+    builder.Services.AddScoped<DevelopmentAdminSeeder>();
+}
 
 var app = builder.Build();
 
@@ -125,6 +141,16 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+}
+
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+
+    var adminSeeder =
+        scope.ServiceProvider.GetRequiredService<DevelopmentAdminSeeder>();
+
+    await adminSeeder.SeedAsync();
 }
 
 app.UseHttpsRedirection();
