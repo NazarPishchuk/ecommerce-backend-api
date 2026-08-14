@@ -1,4 +1,4 @@
-﻿namespace ECommerce.Application.Messaging;
+﻿namespace ECommerce.Contracts.Messaging;
 
 public sealed record EmailConfirmationRequested(
     string UserId,

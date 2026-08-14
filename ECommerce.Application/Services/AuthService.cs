@@ -1,7 +1,7 @@
 ﻿using ECommerce.Application.Authorization;
 using ECommerce.Application.DTOs.Authentication;
 using ECommerce.Application.Interfaces;
-using ECommerce.Application.Messaging;
+using ECommerce.Contracts.Messaging;
 using ECommerce.Application.Results;
 
 namespace ECommerce.Application.Services;
