@@ -12,6 +12,10 @@ public sealed class OutboxMessageConfiguration : IEntityTypeConfiguration<Outbox
             .HasMaxLength(200)
             .IsRequired();
 
+        builder.Property(x => x.RoutingKey)
+            .HasMaxLength(200)
+            .IsRequired();
+
         builder.Property(x => x.Payload)
             .IsRequired();
 
