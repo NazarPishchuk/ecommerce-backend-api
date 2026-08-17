@@ -2,5 +2,5 @@
 
 public interface IOutboxWriter
 {
-    void Add<T>(T message);
+    void Add<T>(T message, string routingKey);
 }

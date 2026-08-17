@@ -309,6 +309,11 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("ProcessedAtUtc")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<string>("RoutingKey")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasMaxLength(200)

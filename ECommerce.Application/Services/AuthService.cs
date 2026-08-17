@@ -55,7 +55,7 @@ public sealed class AuthService(
 
         var message = new EmailConfirmationRequested(userId, request.Email, tokenResult.Value!);
 
-        outboxWriter.Add(message);
+        outboxWriter.Add(message, MessageRoutingKeys.EmailConfirmationRequested);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 

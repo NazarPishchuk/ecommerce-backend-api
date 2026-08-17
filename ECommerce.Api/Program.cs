@@ -3,6 +3,7 @@ using ECommerce.Application.Mapping;
 using ECommerce.Application.Services;
 using ECommerce.Infrastructure.Authentication;
 using ECommerce.Infrastructure.Identity;
+using ECommerce.Infrastructure.Messaging;
 using ECommerce.Infrastructure.Persistence;
 using ECommerce.Infrastructure.Persistence.Outbox;
 using ECommerce.Infrastructure.Persistence.Repositories;
@@ -19,12 +20,44 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((context, configuration) =>
 {
+    var seqServerUrl = context.Configuration["Seq:ServerUrl"]
+        ?? throw new InvalidOperationException("Seq server URL is not configured.");
+
+    var seqApiKey = context.Configuration["Seq:ApiKey"]
+        ?? throw new InvalidOperationException("Seq API key is not configured.");
+
     configuration
         .ReadFrom.Configuration(context.Configuration)
         .Enrich.FromLogContext()
         .WriteTo.Console()
-        .WriteTo.Seq("http://localhost:5341");
+        .WriteTo.Seq(seqServerUrl, apiKey: seqApiKey);
 });
+
+builder.Services
+    .AddOptions<RabbitMqOptions>()
+    .Bind(builder.Configuration.GetSection(RabbitMqOptions.SectionName))
+
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.HostName),
+        "RabbitMQ HostName is required.")
+
+    .Validate(
+        options => options.Port is > 0 and <= 65535,
+        "RabbitMQ Port must be valid.")
+
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.UserName),
+        "RabbitMQ UserName is required.")
+
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.Password),
+        "RabbitMQ Password is required.")
+
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.ExchangeName),
+        "RabbitMQ ExchangeName is required.")
+
+    .ValidateOnStart();
 
 // Add services to the container.
 
