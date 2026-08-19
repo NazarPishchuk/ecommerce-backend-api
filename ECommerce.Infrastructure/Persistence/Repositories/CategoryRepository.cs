@@ -6,23 +6,23 @@ namespace ECommerce.Infrastructure.Persistence.Repositories;
 
 public class CategoryRepository(ECommerceDbContext dbContext) : ICategoryRepository
 {
-    public async Task<IReadOnlyList<Category>> GetAllAsync()
+    public async Task<IReadOnlyList<Category>> GetAllAsync(CancellationToken cancellationToken)
     {
         return await dbContext.Categories
             .AsNoTracking()
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<Category?> GetByIdAsync(int id)
+    public async Task<Category?> GetByIdAsync(int id, CancellationToken cancellationToken)
     {
         return await dbContext.Categories
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
-    public async Task<bool> ExistsByNormalizedNameAsync(string normalizedName)
+    public async Task<bool> ExistsByNormalizedNameAsync(string normalizedName, CancellationToken cancellationToken)
     {
         return await dbContext.Categories
-            .AnyAsync(x => x.NormalizedName == normalizedName);
+            .AnyAsync(x => x.NormalizedName == normalizedName, cancellationToken);
     }
 
     public void Add(Category category)
@@ -35,10 +35,10 @@ public class CategoryRepository(ECommerceDbContext dbContext) : ICategoryReposit
         dbContext.Categories.Remove(category);
     }
 
-    public async Task<bool> HasProductsAsync(int categoryId)
+    public async Task<bool> HasProductsAsync(int categoryId, CancellationToken cancellationToken)
     {
         return await dbContext.Products
-                .AnyAsync(product => product.CategoryId == categoryId);
+                .AnyAsync(product => product.CategoryId == categoryId, cancellationToken);
     }
 }
 
