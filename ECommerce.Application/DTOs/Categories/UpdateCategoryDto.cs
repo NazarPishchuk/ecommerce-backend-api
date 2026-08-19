@@ -1,6 +1,10 @@
-﻿namespace ECommerce.Application.DTOs.Categories;
+﻿using System.ComponentModel.DataAnnotations;
 
-public class UpdateCategoryDto
+namespace ECommerce.Application.DTOs.Categories;
+
+public sealed class UpdateCategoryDto
 {
+    [Required]
+    [MaxLength(100)]
     public string Name { get; set; } = null!;
 }
