@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ECommerce.Infrastructure.Messaging;
 
-internal sealed class RabbitMqPublisher(IOptions<RabbitMqOptions> options)
+public sealed class RabbitMqPublisher(IOptions<RabbitMqOptions> options)
 {
     private readonly RabbitMqOptions _options = options.Value;
 

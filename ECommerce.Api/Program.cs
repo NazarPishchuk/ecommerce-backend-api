@@ -59,6 +59,10 @@ builder.Services
 
     .ValidateOnStart();
 
+builder.Services.AddSingleton<RabbitMqPublisher>();
+
+builder.Services.AddHostedService<OutboxProcessor>();
+
 // Add services to the container.
 
 builder.Services.AddControllers()
