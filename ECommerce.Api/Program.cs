@@ -3,17 +3,65 @@ using ECommerce.Application.Mapping;
 using ECommerce.Application.Services;
 using ECommerce.Infrastructure.Authentication;
 using ECommerce.Infrastructure.Identity;
+using ECommerce.Infrastructure.Messaging;
 using ECommerce.Infrastructure.Persistence;
+using ECommerce.Infrastructure.Persistence.Outbox;
 using ECommerce.Infrastructure.Persistence.Repositories;
+using ECommerce.Infrastructure.Persistence.Seeding;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 using System.Text;
-using ECommerce.Infrastructure.Persistence.Seeding;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, configuration) =>
+{
+    var seqServerUrl = context.Configuration["Seq:ServerUrl"]
+        ?? throw new InvalidOperationException("Seq server URL is not configured.");
+
+    var seqApiKey = context.Configuration["Seq:ApiKey"]
+        ?? throw new InvalidOperationException("Seq API key is not configured.");
+
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .Enrich.FromLogContext()
+        .WriteTo.Console()
+        .WriteTo.Seq(seqServerUrl, apiKey: seqApiKey);
+});
+
+builder.Services
+    .AddOptions<RabbitMqOptions>()
+    .Bind(builder.Configuration.GetSection(RabbitMqOptions.SectionName))
+
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.HostName),
+        "RabbitMQ HostName is required.")
+
+    .Validate(
+        options => options.Port is > 0 and <= 65535,
+        "RabbitMQ Port must be valid.")
+
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.UserName),
+        "RabbitMQ UserName is required.")
+
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.Password),
+        "RabbitMQ Password is required.")
+
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.ExchangeName),
+        "RabbitMQ ExchangeName is required.")
+
+    .ValidateOnStart();
+
+builder.Services.AddSingleton<RabbitMqPublisher>();
+
+builder.Services.AddHostedService<OutboxProcessor>();
 
 // Add services to the container.
 
@@ -52,6 +100,8 @@ builder.Services.AddScoped<IIdentityService, IdentityService>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 
+builder.Services.AddScoped<IOutboxWriter, OutboxWriter>();
+
 builder.Services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
 
 builder.Services.AddScoped<ICategoryService, CategoryService>();
@@ -70,11 +120,14 @@ var jwtOptions = builder.Configuration
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
+        options.SignIn.RequireConfirmedEmail = true;
+
         options.Lockout.MaxFailedAccessAttempts = 5;
         options.Lockout.DefaultLockoutTimeSpan =
             TimeSpan.FromMinutes(15);
     })
-    .AddEntityFrameworkStores<ECommerceDbContext>();
+    .AddEntityFrameworkStores<ECommerceDbContext>()
+    .AddDefaultTokenProviders();
 
 
 builder.Services
@@ -152,6 +205,8 @@ if (app.Environment.IsDevelopment())
 
     await adminSeeder.SeedAsync();
 }
+
+app.UseSerilogRequestLogging();
 
 app.UseHttpsRedirection();
 

@@ -1,10 +1,15 @@
 <Solution>
   <Folder Name="/Solution Items/">
+    <File Path=".env" />
+    <File Path=".env.example" />
     <File Path=".gitignore" />
+    <File Path="compose.yml" />
     <File Path="README.md" />
   </Folder>
   <Project Path="ECommerce.Api/ECommerce.Api.csproj" />
   <Project Path="ECommerce.Application/ECommerce.Application.csproj" Id="5f00a1bc-0e69-4c87-888a-7fc234192300" />
+  <Project Path="ECommerce.Contracts/ECommerce.Contracts.csproj" Id="126ad775-6fcb-49ef-8678-7b3d983f4911" />
   <Project Path="ECommerce.Domain/ECommerce.Domain.csproj" Id="02ecb849-92d5-47ed-ba2e-d983d116c2e9" />
   <Project Path="ECommerce.Infrastructure/ECommerce.Infrastructure.csproj" Id="656d5bca-e94d-42d7-9de0-e3286ea19e61" />
+  <Project Path="ECommerce.NotificationService/ECommerce.NotificationService.csproj" Id="3625994a-0ece-47ca-ade7-a23a5d4a7641" />
 </Solution>
