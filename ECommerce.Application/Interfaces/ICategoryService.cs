@@ -5,9 +5,9 @@ namespace ECommerce.Application.Interfaces;
 
 public interface ICategoryService
 {
-    Task<Result<IReadOnlyList<GetCategoryDto>>> GetAllAsync();
-    Task<Result<GetCategoryDto>> GetByIdAsync(int id);
-    Task<Result<GetCategoryDto>> CreateAsync(CreateCategoryDto dto);
-    Task<Result> UpdateAsync(int id, UpdateCategoryDto dto);
-    Task<Result> DeleteAsync(int id);
+    Task<Result<IReadOnlyList<GetCategoryDto>>> GetAllAsync(CancellationToken cancellationToken);
+    Task<Result<GetCategoryDto>> GetByIdAsync(int id, CancellationToken cancellationToken);
+    Task<Result<GetCategoryDto>> CreateAsync(CreateCategoryDto dto, CancellationToken cancellationToken);
+    Task<Result> UpdateAsync(int id, UpdateCategoryDto dto, CancellationToken cancellationToken);
+    Task<Result> DeleteAsync(int id, CancellationToken cancellationToken);
 }

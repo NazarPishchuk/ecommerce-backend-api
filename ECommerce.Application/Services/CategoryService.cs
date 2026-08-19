@@ -10,12 +10,12 @@ public class CategoryService(ICategoryRepository categoryRepository,
                             IUnitOfWork unitOfWork,
                             IMapper mapper) : ICategoryService
 {
-    public async Task<Result<GetCategoryDto>> CreateAsync(CreateCategoryDto dto)
+    public async Task<Result<GetCategoryDto>> CreateAsync(CreateCategoryDto dto, CancellationToken cancellationToken)
     {
         var category = mapper.Map<Category>(dto);
 
         if(await categoryRepository
-            .ExistsByNormalizedNameAsync(category.NormalizedName))
+            .ExistsByNormalizedNameAsync(category.NormalizedName, cancellationToken))
         {
             return Result<GetCategoryDto>.Failure(new Error(
                 "Category.AlreadyExists",
@@ -25,16 +25,16 @@ public class CategoryService(ICategoryRepository categoryRepository,
 
         categoryRepository.Add(category);
 
-        await unitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         var categoryDto = mapper.Map<GetCategoryDto>(category);
 
         return Result<GetCategoryDto>.Success(categoryDto);
     }
 
-    public async Task<Result> DeleteAsync(int id)
+    public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken)
     {
-        var category = await categoryRepository.GetByIdAsync(id);
+        var category = await categoryRepository.GetByIdAsync(id, cancellationToken);
 
         if(category is null)
         {
@@ -45,7 +45,7 @@ public class CategoryService(ICategoryRepository categoryRepository,
                     "Category with this id was not found."));
         }
 
-        if(await categoryRepository.HasProductsAsync(id))
+        if(await categoryRepository.HasProductsAsync(id, cancellationToken))
         {
             return Result.Failure(
                 new Error(
@@ -56,23 +56,23 @@ public class CategoryService(ICategoryRepository categoryRepository,
 
         categoryRepository.Delete(category);
 
-        await unitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result.Success();
     }
 
-    public async Task<Result<IReadOnlyList<GetCategoryDto>>> GetAllAsync()
+    public async Task<Result<IReadOnlyList<GetCategoryDto>>> GetAllAsync(CancellationToken cancellationToken)
     {
-        var categories = await categoryRepository.GetAllAsync();
+        var categories = await categoryRepository.GetAllAsync(cancellationToken);
 
         var categoryDtos = mapper.Map<IReadOnlyList<GetCategoryDto>>(categories);
 
         return Result<IReadOnlyList<GetCategoryDto>>.Success(categoryDtos);
     }
 
-    public async Task<Result<GetCategoryDto>> GetByIdAsync(int id)
+    public async Task<Result<GetCategoryDto>> GetByIdAsync(int id, CancellationToken cancellationToken)
     {
-        var category = await categoryRepository.GetByIdAsync(id);
+        var category = await categoryRepository.GetByIdAsync(id, cancellationToken);
 
         if(category is null)
         {
@@ -89,9 +89,9 @@ public class CategoryService(ICategoryRepository categoryRepository,
         return Result<GetCategoryDto>.Success(categoryDto);
     }
 
-    public async Task<Result> UpdateAsync(int id, UpdateCategoryDto dto)
+    public async Task<Result> UpdateAsync(int id, UpdateCategoryDto dto, CancellationToken cancellationToken)
     {
-        var category = await categoryRepository.GetByIdAsync(id);
+        var category = await categoryRepository.GetByIdAsync(id, cancellationToken);
         
         if(category is null)
         {
@@ -101,7 +101,7 @@ public class CategoryService(ICategoryRepository categoryRepository,
                 "Category with this id was not found."));
         }
 
-        if (await categoryRepository.ExistsByNormalizedNameAsync(dto.Name.Trim().ToUpperInvariant()))
+        if (await categoryRepository.ExistsByNormalizedNameAsync(dto.Name.Trim().ToUpperInvariant(), cancellationToken))
         {
             return Result.Failure(new Error(
                 "Category.AlreadyExists",
@@ -110,7 +110,7 @@ public class CategoryService(ICategoryRepository categoryRepository,
         }
 
         mapper.Map(dto, category);
-        await unitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result.Success();
     }
