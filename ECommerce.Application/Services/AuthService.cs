@@ -1,17 +1,19 @@
 ﻿using ECommerce.Application.Authorization;
 using ECommerce.Application.DTOs.Authentication;
 using ECommerce.Application.Interfaces;
+using ECommerce.Application.Messaging;
 using ECommerce.Application.Results;
 
 namespace ECommerce.Application.Services;
 
 public sealed class AuthService(
-    IIdentityService identityService,
-    IJwtTokenGenerator jwtTokenGenerator) : IAuthService
+                IIdentityService identityService,
+                IJwtTokenGenerator jwtTokenGenerator,
+                IUnitOfWork unitOfWork,
+                IOutboxWriter outboxWriter) : IAuthService
 {
-    public async Task<Result<RegisteredUserResponse>> RegisterAsync(
-        RegisterRequest request,
-        CancellationToken cancellationToken = default)
+    public async Task<Result<RegisteredUserResponse>> RegisterAsync(RegisterRequest request,
+                                                                    CancellationToken cancellationToken = default)
     {
         var emailExists = await identityService.EmailExistsAsync(request.Email);
 
@@ -24,6 +26,8 @@ public sealed class AuthService(
                     "User with this email already exists."));
         }
 
+        await using var transaction = await unitOfWork.BeginTransactionAsync(cancellationToken);
+
         var createResult = await identityService.CreateUserAsync(
             request.FirstName,
             request.LastName,
@@ -33,30 +37,44 @@ public sealed class AuthService(
 
         if (createResult.IsFailure)
         {
-            return Result<RegisteredUserResponse>.Failure(
-                createResult.Error!);
+            await transaction.RollbackAsync();
+
+            return Result<RegisteredUserResponse>.Failure(createResult.Error!);
         }
+
+        var userId = createResult.Value!;
+
+        var tokenResult = await identityService.GenerateEmailConfirmationTokenAsync(userId);
+
+        if (tokenResult.IsFailure)
+        {
+            await transaction.RollbackAsync();
+
+            return Result<RegisteredUserResponse>.Failure(tokenResult.Error!);
+        }
+
+        var message = new EmailConfirmationRequested(userId, request.Email, tokenResult.Value!);
+
+        outboxWriter.Add(message);
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await transaction.CommitAsync(cancellationToken);
 
         return Result<RegisteredUserResponse>.Success(
-            new RegisteredUserResponse(createResult.Value!));
+            new RegisteredUserResponse(userId));
     }
 
-    public async Task<Result<AccessTokenResponse>> LoginAsync(
-        LoginRequest request)
+    public async Task<Result<AccessTokenResponse>> LoginAsync(LoginRequest request)
     {
-        var userIdResult =
-            await identityService.ValidateCredentialsAsync(
-                request.Email,
-                request.Password);
+        var userIdResult = await identityService.ValidateCredentialsAsync(request.Email, request.Password);
 
-        if (userIdResult.IsFailure)
+        if(userIdResult.IsFailure)
         {
-            return Result<AccessTokenResponse>.Failure(
-                userIdResult.Error!);
+            return Result<AccessTokenResponse>.Failure(userIdResult.Error!);
         }
 
-        var rolesResult =
-            await identityService.GetRolesAsync(userIdResult.Value!);
+        var rolesResult = await identityService.GetRolesAsync(userIdResult.Value!);
 
         if (rolesResult.IsFailure)
         {
@@ -70,5 +88,10 @@ public sealed class AuthService(
             rolesResult.Value!);
 
         return Result<AccessTokenResponse>.Success(token);
+    }
+
+    public async Task<Result> ConfirmEmailAsync(string userId, string token)
+    {
+        return await identityService.ConfirmEmailAsync(userId, token);
     }
 }

@@ -4,6 +4,7 @@ using ECommerce.Application.Services;
 using ECommerce.Infrastructure.Authentication;
 using ECommerce.Infrastructure.Identity;
 using ECommerce.Infrastructure.Persistence;
+using ECommerce.Infrastructure.Persistence.Outbox;
 using ECommerce.Infrastructure.Persistence.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -52,6 +53,8 @@ builder.Services.AddScoped<IIdentityService, IdentityService>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 
+builder.Services.AddScoped<IOutboxWriter, OutboxWriter>();
+
 builder.Services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
 
 builder.Services.AddScoped<ICategoryService, CategoryService>();
@@ -70,11 +73,14 @@ var jwtOptions = builder.Configuration
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
+        options.SignIn.RequireConfirmedEmail = true;
+
         options.Lockout.MaxFailedAccessAttempts = 5;
         options.Lockout.DefaultLockoutTimeSpan =
             TimeSpan.FromMinutes(15);
     })
-    .AddEntityFrameworkStores<ECommerceDbContext>();
+    .AddEntityFrameworkStores<ECommerceDbContext>()
+    .AddDefaultTokenProviders();
 
 
 builder.Services
