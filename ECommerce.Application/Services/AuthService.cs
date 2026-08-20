@@ -12,14 +12,13 @@ public sealed class AuthService(
                 IUnitOfWork unitOfWork,
                 IOutboxWriter outboxWriter) : IAuthService
 {
-    public async Task<Result<RegisteredUserResponse>> RegisterAsync(RegisterRequest request,
-                                                                    CancellationToken cancellationToken = default)
+    public async Task<Result<RegisterResponse>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken)
     {
         var emailExists = await identityService.EmailExistsAsync(request.Email);
 
         if (emailExists)
         {
-            return Result<RegisteredUserResponse>.Failure(
+            return Result<RegisterResponse>.Failure(
                 new Error(
                     "Auth.EmailAlreadyExists",
                     ErrorType.Conflict,
@@ -39,7 +38,7 @@ public sealed class AuthService(
         {
             await transaction.RollbackAsync();
 
-            return Result<RegisteredUserResponse>.Failure(createResult.Error!);
+            return Result<RegisterResponse>.Failure(createResult.Error!);
         }
 
         var userId = createResult.Value!;
@@ -50,7 +49,7 @@ public sealed class AuthService(
         {
             await transaction.RollbackAsync();
 
-            return Result<RegisteredUserResponse>.Failure(tokenResult.Error!);
+            return Result<RegisterResponse>.Failure(tokenResult.Error!);
         }
 
         var message = new EmailConfirmationRequested(userId, request.Email, tokenResult.Value!);
@@ -61,24 +60,24 @@ public sealed class AuthService(
 
         await transaction.CommitAsync(cancellationToken);
 
-        return Result<RegisteredUserResponse>.Success(
-            new RegisteredUserResponse(userId));
+        return Result<RegisterResponse>.Success(
+            new RegisterResponse(userId));
     }
 
-    public async Task<Result<AccessTokenResponse>> LoginAsync(LoginRequest request)
+    public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request)
     {
         var userIdResult = await identityService.ValidateCredentialsAsync(request.Email, request.Password);
 
         if(userIdResult.IsFailure)
         {
-            return Result<AccessTokenResponse>.Failure(userIdResult.Error!);
+            return Result<LoginResponse>.Failure(userIdResult.Error!);
         }
 
         var rolesResult = await identityService.GetRolesAsync(userIdResult.Value!);
 
         if (rolesResult.IsFailure)
         {
-            return Result<AccessTokenResponse>.Failure(
+            return Result<LoginResponse>.Failure(
                 rolesResult.Error!);
         }
 
@@ -87,7 +86,7 @@ public sealed class AuthService(
             request.Email,
             rolesResult.Value!);
 
-        return Result<AccessTokenResponse>.Success(token);
+        return Result<LoginResponse>.Success(token);
     }
 
     public async Task<Result> ConfirmEmailAsync(string userId, string token)

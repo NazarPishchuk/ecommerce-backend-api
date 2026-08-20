@@ -12,7 +12,7 @@ public sealed class JwtTokenGenerator(IOptions<JwtOptions> options) : IJwtTokenG
 {
     private readonly JwtOptions _options = options.Value;
 
-    public AccessTokenResponse GenerateToken(
+    public LoginResponse GenerateToken(
         string userId,
         string email,
         IEnumerable<string> roles)
@@ -48,6 +48,6 @@ public sealed class JwtTokenGenerator(IOptions<JwtOptions> options) : IJwtTokenG
 
         var token = tokenHandler.CreateToken(tokenDescriptor);
 
-        return new AccessTokenResponse(token, expiresAtUtc);
+        return new LoginResponse(token, expiresAtUtc);
     }
 }

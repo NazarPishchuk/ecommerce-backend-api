@@ -1,4 +1,4 @@
 ﻿namespace ECommerce.Application.DTOs.Authentication;
 
-public sealed record RegisteredUserResponse(
+public sealed record RegisterResponse(
     string Id);

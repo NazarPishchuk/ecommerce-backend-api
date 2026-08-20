@@ -4,7 +4,7 @@ namespace ECommerce.Application.Interfaces;
 
 public interface IJwtTokenGenerator
 {
-    AccessTokenResponse GenerateToken(
+    LoginResponse GenerateToken(
         string userId,
         string email,
         IEnumerable<string> roles);
