@@ -9,11 +9,14 @@ public interface IIdentityService
                                 string lastName,
                                 string email,
                                 string password,
-                                string role);
+                                string role);        
     Task<Result<string>> ValidateCredentialsAsync(
                                 string email,
                                 string password);
     Task<Result<IReadOnlyCollection<string>>> GetRolesAsync(string userId);
     Task<Result<string>> GenerateEmailConfirmationTokenAsync(string userId);
     Task<Result> ConfirmEmailAsync(string userId, string token);
+
+    Task<Result<string>>GetUnconfirmedUserIdByEmailAsync(string email);
+
 }

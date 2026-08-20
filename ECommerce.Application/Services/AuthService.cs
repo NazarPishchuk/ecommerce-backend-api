@@ -93,4 +93,29 @@ public sealed class AuthService(
     {
         return await identityService.ConfirmEmailAsync(userId, token);
     }
+
+    public async Task<Result> ResendEmailAsync(string email, CancellationToken cancellationToken)
+    {
+        var userIdResult = await identityService.GetUnconfirmedUserIdByEmailAsync(email);
+
+        if (userIdResult.IsFailure)
+        {
+            return Result.Failure(userIdResult.Error!);
+        }
+
+        var tokenResult = await identityService.GenerateEmailConfirmationTokenAsync(userIdResult.Value!);
+
+        if (tokenResult.IsFailure)
+        {
+            return Result.Failure(tokenResult.Error!);
+        }
+
+        var message = new EmailConfirmationRequested(userIdResult.Value!, email, tokenResult.Value!);
+
+        outboxWriter.Add(message, MessageRoutingKeys.EmailConfirmationRequested);
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result.Success();
+    }
 }

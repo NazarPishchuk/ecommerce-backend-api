@@ -1,6 +1,7 @@
 ﻿using ECommerce.Application.Interfaces;
 using ECommerce.Application.Results;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens.Experimental;
 
 namespace ECommerce.Infrastructure.Identity;
 
@@ -177,5 +178,29 @@ public sealed class IdentityService(
         }
 
         return Result.Success();
+    }
+    public async Task<Result<string>> GetUnconfirmedUserIdByEmailAsync(string email)
+    {
+        var user = await userManager.FindByEmailAsync(email);
+
+        if(user is null)
+        {
+            return Result<string>.Failure(
+                new Error(
+                    "Auth.UserNotFound",
+                    ErrorType.NotFound,
+                    "User with this email was not found."));
+        }
+
+        if (user.EmailConfirmed)
+        {
+            return Result<string>.Failure(
+                new Error(
+                    "Auth.EmailAlreadyConfirmed",
+                    ErrorType.Conflict,
+                    "Email is already confirmed."));
+        }
+
+        return Result<string>.Success(user.Id);
     }
 }
