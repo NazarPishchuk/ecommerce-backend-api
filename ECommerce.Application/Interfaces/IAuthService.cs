@@ -5,7 +5,7 @@ namespace ECommerce.Application.Interfaces;
 
 public interface IAuthService
 {
-    Task<Result<RegisteredUserResponse>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default);
-    Task<Result<AccessTokenResponse>> LoginAsync(LoginRequest request);
+    Task<Result<RegisterResponse>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken);
+    Task<Result<LoginResponse>> LoginAsync(LoginRequest request);
     Task<Result> ConfirmEmailAsync(string userId, string token);
 }

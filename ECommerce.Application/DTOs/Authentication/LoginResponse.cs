@@ -1,5 +1,5 @@
 ﻿namespace ECommerce.Application.DTOs.Authentication;
 
-public sealed record AccessTokenResponse(
+public sealed record LoginResponse(
     string AccessToken,
     DateTimeOffset ExpiresAtUtc);
