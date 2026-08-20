@@ -129,4 +129,53 @@ public sealed class IdentityService(
 
         return Result<string>.Success(user.Id);
     }
+
+    public async Task<Result<string>> GenerateEmailConfirmationTokenAsync(string userId)
+    {
+        var user = await userManager.FindByIdAsync(userId);
+
+        if(user is null)
+        {
+            return Result<string>.Failure(
+            new Error(
+                "Identity.UserNotFound",
+                ErrorType.NotFound,
+                "User was not found."));
+        }
+
+        var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+
+        return Result<string>.Success(token);
+    }
+
+    public async Task<Result> ConfirmEmailAsync(string userId, string token)
+    {
+        var user = await userManager.FindByIdAsync(userId);
+
+        if(user is null)
+        {
+            return Result.Failure(
+                new Error(
+                    "Identity.UserNotFound",
+                    ErrorType.NotFound,
+                    "User was not found."));
+        }
+
+        var confirmResult = await userManager.ConfirmEmailAsync(user, token);
+
+        if (!confirmResult.Succeeded)
+        {
+            var errorMessage = string.Join(
+                "; ",
+                confirmResult.Errors.Select(error => error.Description));
+
+            return Result.Failure(
+                new Error(
+                    "Identity.EmailConfirmationFailed",
+                    ErrorType.Validation,
+                    errorMessage));
+        }
+
+        return Result.Success();
+    }
 }

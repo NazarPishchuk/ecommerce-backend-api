@@ -35,4 +35,17 @@ public sealed class AuthController(IAuthService authService) : ApiControllerBase
 
         return Ok(result.Value);
     }
+
+    [HttpPost("confirm-email")]
+    public async Task<IActionResult> ConfirmEmail(ConfirmEmailRequest request)
+    {
+        var result = await authService.ConfirmEmailAsync(request.UserId, request.Token);
+
+        if (result.IsFailure)
+        {
+            return MapError(result.Error!);
+        }
+
+        return NoContent();
+    }
 }
