@@ -177,7 +177,7 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<int>("SellerProfileId")
+                    b.Property<int?>("SellerProfileId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -529,8 +529,7 @@ namespace ECommerce.Infrastructure.Migrations
                     b.HasOne("ECommerce.Domain.Entities.SellerProfile", "SellerProfile")
                         .WithMany("Products")
                         .HasForeignKey("SellerProfileId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Category");
 
