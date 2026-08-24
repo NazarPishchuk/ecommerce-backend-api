@@ -1,5 +1,7 @@
 ﻿using ECommerce.Application.Results;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace ECommerce.Api.Controllers;
 
@@ -30,4 +32,9 @@ public abstract class ApiControllerBase : ControllerBase
                     error)
         };
     }
+
+    protected string CurrentUserId =>
+        User.FindFirstValue(JwtRegisteredClaimNames.Sub)
+        ?? throw new InvalidOperationException(
+            "Authenticated user doess not contain a 'sub' claim.");
 }
