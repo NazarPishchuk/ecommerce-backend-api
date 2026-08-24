@@ -13,15 +13,15 @@ public class CategoriesController(
        ICategoryService categoryService) : ApiControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<GetCategoryDto>>> GetAllAsync(CancellationToken cancellationToken)
+    public async Task<ActionResult<IReadOnlyList<GetCategoryDto>>> GetAllCategoriesAsync(CancellationToken cancellationToken)
     {
         var result = await categoryService.GetAllAsync(cancellationToken);
 
         return Ok(result.Value);
     }
 
-    [HttpGet("{id:int}", Name = nameof(GetByIdAsync))]
-    public async Task<ActionResult<GetCategoryDto>> GetByIdAsync(int id, CancellationToken cancellationToken)
+    [HttpGet("{id:int}", Name = nameof(GetCategoryByIdAsync))]
+    public async Task<ActionResult<GetCategoryDto>> GetCategoryByIdAsync(int id, CancellationToken cancellationToken)
     {
         var result = await categoryService.GetByIdAsync(id, cancellationToken);
 
@@ -35,7 +35,7 @@ public class CategoriesController(
 
     [HttpPost]
     [Authorize(Roles = AppRoles.Admin)]
-    public async Task<ActionResult<GetCategoryDto>> CreateAsync(CreateCategoryDto dto, CancellationToken cancellationToken)
+    public async Task<ActionResult<GetCategoryDto>> CreateCategoryAsync(CreateCategoryDto dto, CancellationToken cancellationToken)
     {
         var result = await categoryService.CreateAsync(dto, cancellationToken);
 
@@ -45,14 +45,14 @@ public class CategoriesController(
         }
 
         return CreatedAtRoute(
-            nameof(GetByIdAsync),
+            nameof(GetCategoryByIdAsync),
             new { id = result.Value!.Id },
             result.Value);
     }
 
     [HttpPut("{id:int}")]
     [Authorize(Roles = AppRoles.Admin)]
-    public async Task<IActionResult> UpdateAsync(int id, UpdateCategoryDto dto, CancellationToken cancellationToken)
+    public async Task<IActionResult> UpdateCategoryAsync(int id, UpdateCategoryDto dto, CancellationToken cancellationToken)
     {
         var result = await categoryService.UpdateAsync(id, dto, cancellationToken);
 
@@ -66,7 +66,7 @@ public class CategoriesController(
 
     [HttpDelete("{id:int}")]
     [Authorize(Roles = AppRoles.Admin)]
-    public async Task<IActionResult> DeleteAsync(int id, CancellationToken cancellationToken)
+    public async Task<IActionResult> DeleteCategoryAsync(int id, CancellationToken cancellationToken)
     {
         var result = await categoryService.DeleteAsync(id, cancellationToken);
 
