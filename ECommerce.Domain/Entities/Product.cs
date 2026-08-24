@@ -2,7 +2,7 @@
 
 public class Product
 {
-    public int Id { get; set; }
+    public int Id { get; set; } 
     public string Name { get; set; } = null!;
     public string Description { get; set; } = null!;
     public decimal Price { get; set; }
@@ -13,5 +13,6 @@ public class Product
     
     public int SellerProfileId { get; set; }
     public SellerProfile SellerProfile { get; set; } = null!;
-    public bool IsActive { get; set; }
+    public bool IsActive { get; set; } 
+    public bool IsBlocked { get; set; }
 }
