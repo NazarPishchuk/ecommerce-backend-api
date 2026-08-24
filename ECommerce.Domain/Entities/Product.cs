@@ -11,8 +11,8 @@ public class Product
     public int CategoryId { get; set; }
     public Category Category { get; set; } = null!;
     
-    public int SellerProfileId { get; set; }
-    public SellerProfile SellerProfile { get; set; } = null!;
+    public int? SellerProfileId { get; set; }
+    public SellerProfile? SellerProfile { get; set; }
     public bool IsActive { get; set; } 
     public bool IsBlocked { get; set; }
 }
