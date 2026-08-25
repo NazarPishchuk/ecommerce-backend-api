@@ -1,3 +1,4 @@
+using ECommerce.Application.Authentication;
 using ECommerce.Application.Interfaces;
 using ECommerce.Application.Mapping;
 using ECommerce.Application.Services;
@@ -13,6 +14,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -166,6 +168,51 @@ builder.Services
 
                 RoleClaimType = "role"
             };
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                var userId = context.Principal?
+                    .FindFirst(JwtRegisteredClaimNames.Sub)?
+                    .Value;
+
+                var email = context.Principal?
+                    .FindFirst(JwtRegisteredClaimNames.Email)?
+                    .Value;
+
+                var tokenVersionValue = context.Principal?
+                    .FindFirst(CustomClaimTypes.TokenVersion)?
+                    .Value;
+
+                if(string.IsNullOrWhiteSpace(userId) ||
+                    string.IsNullOrWhiteSpace(email) ||
+                    !int.TryParse(
+                        tokenVersionValue,
+                        out var tokenVersion))
+                {
+                    context.Fail("Invalid token.");
+                    return;
+                }
+
+                var identityService = context.HttpContext
+                    .RequestServices
+                    .GetRequiredService<IIdentityService>();
+
+                var tokenVersionResult =
+                    await identityService.GetTokenVersionAsync(userId);
+
+                if (tokenVersionResult.IsFailure)
+                {
+                    context.Fail("Invalid token.");
+                    return;
+                }
+
+                if (tokenVersionResult.Value != tokenVersion)
+                {
+                    context.Fail("Token has been revoked.");
+                }
+            }
+        };
     });
 
 builder.Services.AddAuthorization();

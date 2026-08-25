@@ -7,5 +7,6 @@ public interface IJwtTokenGenerator
     LoginResponse GenerateToken(
         string userId,
         string email,
-        IEnumerable<string> roles);
+        IEnumerable<string> roles,
+        int tokenVersion);
 }

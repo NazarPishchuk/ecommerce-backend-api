@@ -1,4 +1,5 @@
-﻿using ECommerce.Application.DTOs.Authentication;
+﻿using ECommerce.Application.Authentication;
+using ECommerce.Application.DTOs.Authentication;
 using ECommerce.Application.Interfaces;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -15,7 +16,8 @@ public sealed class JwtTokenGenerator(IOptions<JwtOptions> options) : IJwtTokenG
     public LoginResponse GenerateToken(
         string userId,
         string email,
-        IEnumerable<string> roles)
+        IEnumerable<string> roles,
+        int tokenVersion)
     {
         var expiresAtUtc = DateTimeOffset.UtcNow.AddMinutes(_options.AccessTokenMinutes);
 
@@ -23,7 +25,8 @@ public sealed class JwtTokenGenerator(IOptions<JwtOptions> options) : IJwtTokenG
         {
             new(JwtRegisteredClaimNames.Sub, userId),
             new(JwtRegisteredClaimNames.Email, email),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(CustomClaimTypes.TokenVersion, tokenVersion.ToString())
         };
 
         claims.AddRange(roles.Select(role => new Claim("role", role)));
