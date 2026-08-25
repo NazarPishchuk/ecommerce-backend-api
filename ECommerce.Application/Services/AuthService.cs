@@ -66,27 +66,19 @@ public sealed class AuthService(
 
     public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request)
     {
-        var userIdResult = await identityService.ValidateCredentialsAsync(request.Email, request.Password);
+        var userIdResult =
+            await identityService.ValidateCredentialsAsync(
+                request.Email,
+                request.Password);
 
-        if(userIdResult.IsFailure)
-        {
-            return Result<LoginResponse>.Failure(userIdResult.Error!);
-        }
-
-        var rolesResult = await identityService.GetRolesAsync(userIdResult.Value!);
-
-        if (rolesResult.IsFailure)
+        if (userIdResult.IsFailure)
         {
             return Result<LoginResponse>.Failure(
-                rolesResult.Error!);
+                userIdResult.Error!);
         }
 
-        var token = jwtTokenGenerator.GenerateToken(
-            userIdResult.Value!,
-            request.Email,
-            rolesResult.Value!);
-
-        return Result<LoginResponse>.Success(token);
+        return await GenerateAccessTokenAsync(
+            userIdResult.Value!);
     }
 
     public async Task<Result> ConfirmEmailAsync(string userId, string token)
@@ -117,5 +109,38 @@ public sealed class AuthService(
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result.Success();
+    }
+
+    public async Task<Result<LoginResponse>> GenerateAccessTokenAsync(string userId)
+    {
+        var emailResult = await identityService.GetEmailAsync(userId);
+
+        if (emailResult.IsFailure)
+        {
+            return Result<LoginResponse>.Failure(emailResult.Error!);
+        }
+
+        var rolesResult = await identityService.GetRolesAsync(userId);
+
+        if (rolesResult.IsFailure)
+        {
+            return Result<LoginResponse>.Failure(rolesResult.Error!);
+        }
+
+        var tokenVersionResult = await identityService.GetTokenVersionAsync(userId);
+
+        if (tokenVersionResult.IsFailure)
+        {
+            return Result<LoginResponse>.Failure(
+                tokenVersionResult.Error!);
+        }
+
+        var response = jwtTokenGenerator.GenerateToken(
+            userId,
+            emailResult.Value!,
+            rolesResult.Value!,
+            tokenVersionResult.Value);
+
+        return Result<LoginResponse>.Success(response);
     }
 }

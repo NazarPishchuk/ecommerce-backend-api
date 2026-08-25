@@ -203,4 +203,64 @@ public sealed class IdentityService(
 
         return Result<string>.Success(user.Id);
     }
+    public async Task<Result<string>> GetEmailAsync(string userId)
+    {
+        var user = await userManager.FindByIdAsync(userId);
+
+        if(user is null)
+        {
+            return Result<string>.Failure(new Error(
+            "Identity.UserNotFound",
+            ErrorType.NotFound,
+            "User was not found."));
+        }
+
+        return Result<string>.Success(user.Email!);
+    }
+
+    public async Task<Result<int>> GetTokenVersionAsync(string userId)
+    {
+        var user = await userManager.FindByIdAsync(userId);
+
+        if (user is null)
+        {
+            return Result<int>.Failure(new Error(
+                "Identity.UserNotFound",
+                ErrorType.NotFound,
+                "User was not found."));
+        }
+
+        return Result<int>.Success(user.TokenVersion);
+    }
+
+    public async Task<Result> IncrementTokenVersionAsync(string userId)
+    {
+        var user = await userManager.FindByIdAsync(userId);
+
+        if (user is null)
+        {
+            return Result.Failure(new Error(
+                "Identity.UserNotFound",
+                ErrorType.NotFound,
+                "User was not found."));
+        }
+
+        user.TokenVersion++;
+
+        var updateResult = await userManager.UpdateAsync(user);
+
+        if (!updateResult.Succeeded)
+        {
+            var errors = string.Join(
+                "; ",
+                updateResult.Errors.Select(error => error.Description));
+
+            return Result.Failure(new Error(
+                "Identity.TokenVersionUpdateFailed",
+                ErrorType.Failure,
+                errors));
+        }
+
+        return Result.Success();
+    }
 }

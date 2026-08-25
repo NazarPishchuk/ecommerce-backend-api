@@ -13,10 +13,22 @@ public interface IIdentityService
     Task<Result<string>> ValidateCredentialsAsync(
                                 string email,
                                 string password);
-    Task<Result<IReadOnlyCollection<string>>> GetRolesAsync(string userId);
-    Task<Result<string>> GenerateEmailConfirmationTokenAsync(string userId);
-    Task<Result> ConfirmEmailAsync(string userId, string token);
+    Task<Result<IReadOnlyCollection<string>>> GetRolesAsync(
+        string userId);
+    Task<Result<string>> GenerateEmailConfirmationTokenAsync(
+        string userId);
+    Task<Result> ConfirmEmailAsync(
+        string userId, 
+        string token);
 
-    Task<Result<string>>GetUnconfirmedUserIdByEmailAsync(string email);
+    Task<Result<string>>GetUnconfirmedUserIdByEmailAsync(
+        string email);
+    Task<Result<string>> GetEmailAsync(
+        string userId);
 
+    Task<Result<int>> GetTokenVersionAsync(
+        string userId);
+
+    Task<Result> IncrementTokenVersionAsync(
+        string userId);
 }
