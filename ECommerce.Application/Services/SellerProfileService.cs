@@ -279,8 +279,9 @@ public class SellerProfileService(ISellerProfileRepository sellerProfileReposito
         UpdateSellerProfileDto dto, 
         CancellationToken cancellationToken)
     {
-        var sellerProfile = await sellerProfileRepository
-        .GetByUserIdAsync(userId, cancellationToken);
+        var sellerProfile = await sellerProfileRepository.GetByUserIdAsync(
+            userId, 
+            cancellationToken);
 
         if (sellerProfile is null)
         {
@@ -324,13 +325,13 @@ public class SellerProfileService(ISellerProfileRepository sellerProfileReposito
             return banResult;
         }
 
-        var deleteResult = await DeleteSellerProfileDataAsync(
-            sellerProfile,
-            cancellationToken);
+        var roleResult = await identityService.RemoveFromRoleAsync(
+            sellerProfile.UserId,
+            AppRoles.Seller);
 
-        if (deleteResult.IsFailure)
+        if (roleResult.IsFailure)
         {
-            return deleteResult;
+            return roleResult;
         }
 
         var tokenVersionResult =
@@ -347,14 +348,52 @@ public class SellerProfileService(ISellerProfileRepository sellerProfileReposito
         return Result.Success();
     }
 
-    public async Task<Result> UnbanSellerAsync(string userId)
+    public async Task<Result> UnbanSellerAsync(
+        int id,
+        CancellationToken cancellationToken)
     {
-        var unbanResult = await identityService.UnbanSellerAsync(userId);
+
+        var sellerProfile = await sellerProfileRepository.GetByIdAsync(
+            id,
+            cancellationToken);
+
+        if (sellerProfile is null)
+        {
+            return Result.Failure(new Error(
+                "SellerProfile.NotFound",
+                ErrorType.NotFound,
+                "Seller profile was not found."));
+        }
+
+        await using var transaction =
+            await unitOfWork.BeginTransactionAsync(cancellationToken);
+
+        var unbanResult = await identityService.UnbanSellerAsync(sellerProfile.UserId);
 
         if (unbanResult.IsFailure)
         {
             return unbanResult;
         }
+
+        var roleResult = await identityService.AddToRoleAsync(
+            sellerProfile.UserId,
+            AppRoles.Seller);
+
+        if (roleResult.IsFailure)
+        {
+            return roleResult;
+        }
+
+        var tokenVersionResult =
+            await identityService.IncrementTokenVersionAsync(
+                sellerProfile.UserId);
+
+        if (tokenVersionResult.IsFailure)
+        {
+            return tokenVersionResult;
+        }
+
+        await transaction.CommitAsync(cancellationToken);
 
         return Result.Success();
     }
