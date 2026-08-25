@@ -278,7 +278,7 @@ public class ProductService(IUnitOfWork unitOfWork,
         string userId,
         CancellationToken cancellationToken)
     {
-        var sellerProfile = await sellerProfileRepository.GetSellerByUserIdAsync(
+        var sellerProfile = await sellerProfileRepository.GetByUserIdAsNoTrackingAsync(
             userId,
             cancellationToken);
 

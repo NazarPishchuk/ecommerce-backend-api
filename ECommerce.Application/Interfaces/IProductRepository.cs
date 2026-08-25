@@ -29,6 +29,14 @@ public interface IProductRepository
         int sellerProfileId,
         CancellationToken cancellationToken);
 
+    Task DeactivateBySellerProfileIdAsync(
+        int sellerProfileId,
+        CancellationToken cancellationToken);
+
+    Task DetachFromSellerProfileAsync(
+        int sellerProfileId,
+        CancellationToken cancellationToken);
+
     void Add(Product product);
 }
 
