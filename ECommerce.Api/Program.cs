@@ -102,6 +102,8 @@ builder.Services.AddScoped<IIdentityService, IdentityService>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 
+builder.Services.AddScoped<ISellerProfileService, SellerProfileService>();
+
 builder.Services.AddScoped<IOutboxWriter, OutboxWriter>();
 
 builder.Services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
