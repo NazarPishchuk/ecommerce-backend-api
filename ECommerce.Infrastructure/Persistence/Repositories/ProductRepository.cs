@@ -13,7 +13,10 @@ public class ProductRepository(ECommerceDbContext dbContext) : IProductRepositor
             .AsNoTracking()
             .Include(x => x.Category)
             .Include(x => x.SellerProfile)
-            .Where(x => x.IsActive && !x.IsBlocked)
+            .Where(x =>
+            x.IsActive &&
+            !x.IsBlocked &&
+            x.SellerProfileId.HasValue)
             .ToListAsync(cancellationToken); 
     }
 
@@ -25,9 +28,12 @@ public class ProductRepository(ECommerceDbContext dbContext) : IProductRepositor
             .AsNoTracking()
             .Include(x => x.SellerProfile)
             .Include(x => x.Category)
-            .FirstOrDefaultAsync(x => x.Id == id 
-                                 && x.IsActive 
-                                 && !x.IsBlocked, cancellationToken);
+            .FirstOrDefaultAsync(x =>
+                x.Id == id &&
+                x.IsActive &&
+                !x.IsBlocked &&
+                x.SellerProfileId.HasValue,
+                cancellationToken);
     }
 
     public async Task<Product?> GetByIdForUpdateAsync(
@@ -70,6 +76,32 @@ public class ProductRepository(ECommerceDbContext dbContext) : IProductRepositor
         return await dbContext.Products
             .FirstOrDefaultAsync(x => x.SellerProfileId == sellerProfileId
                                  && x.Id == id, cancellationToken);
+    }
+
+    public async Task DeactivateBySellerProfileIdAsync(
+        int sellerProfileId,
+        CancellationToken cancellationToken)
+    {
+        await dbContext.Products
+            .Where(product => product.SellerProfileId == sellerProfileId)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(
+                    product => product.IsActive,
+                    false),
+                cancellationToken);
+    }
+
+    public async Task DetachFromSellerProfileAsync(
+        int sellerProfileId,
+        CancellationToken cancellationToken)
+    {
+        await dbContext.Products
+            .Where(product => product.SellerProfileId == sellerProfileId)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(
+                    product => product.SellerProfileId,
+                    (int?)null),
+                cancellationToken);
     }
 
     public void Add(Product product)
