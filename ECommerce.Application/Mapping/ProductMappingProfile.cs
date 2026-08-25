@@ -15,7 +15,7 @@ public class ProductMappingProfile : Profile
                 opt => opt.MapFrom(src => src.Category.Name))
             .ForMember(
                 dest => dest.StoreName,
-                opt => opt.MapFrom(src => src.SellerProfile.StoreName))
+                opt => opt.MapFrom(src => src.SellerProfile!.StoreName))
             .ForMember(
                 dest => dest.StockStatus,
                 opt => opt.MapFrom(src =>
@@ -31,7 +31,7 @@ public class ProductMappingProfile : Profile
                 opt => opt.MapFrom(src => src.Category.Name))
             .ForMember(
                 dest => dest.StoreName,
-                opt => opt.MapFrom(src => src.SellerProfile.StoreName))
+                opt => opt.MapFrom(src => src.SellerProfile!.StoreName))
             .ForMember(
                 dest => dest.StockStatus,
                 opt => opt.MapFrom(src =>
