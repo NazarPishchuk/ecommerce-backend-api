@@ -49,7 +49,7 @@ public class ProductsController(IProductService productService) : ApiControllerB
 
 
     [Authorize(Roles = AppRoles.Seller)]
-    [HttpGet("mine/{id:int}", Name = nameof(GetMineProductByIdAsync))]
+    [HttpGet("{id:int}/mine", Name = nameof(GetMineProductByIdAsync))]
     public async Task<ActionResult<GetSellerProductDto>> GetMineProductByIdAsync(
         int id, 
         CancellationToken cancellationToken)
