@@ -40,6 +40,7 @@ public interface ISellerProfileService
         CancellationToken cancellationToken);
 
     Task<Result> UnbanSellerAsync(
-        string userId);
+        int id,
+        CancellationToken cancellationToken);
 }
 

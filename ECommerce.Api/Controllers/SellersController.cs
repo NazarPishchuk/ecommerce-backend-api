@@ -144,12 +144,14 @@ public class SellersController(ISellerProfileService sellerProfileService) : Api
     }
 
     [Authorize(Roles = AppRoles.Admin)]
-    [HttpPatch("users/{userId}/unban")]
+    [HttpPatch("{id::int}/unban")]
     public async Task<IActionResult> UnbanSellerAsync(
-    string userId)
+        int id,
+        CancellationToken cancellationToken)
     {
         var result = await sellerProfileService.UnbanSellerAsync(
-            userId);
+            id,
+            cancellationToken);
 
         if (result.IsFailure)
         {
