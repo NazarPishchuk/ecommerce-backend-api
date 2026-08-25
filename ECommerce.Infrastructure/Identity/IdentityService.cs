@@ -373,4 +373,35 @@ public sealed class IdentityService(
 
         return Result.Success();
     }
+
+    public async Task<Result> UnbanSellerAsync(string userId)
+    {
+        var user = await userManager.FindByIdAsync(userId);
+
+        if (user is null)
+        {
+            return Result.Failure(new Error(
+                "Identity.UserNotFound",
+                ErrorType.NotFound,
+                "User was not found."));
+        }
+
+        user.IsSellerBanned = false;
+
+        var updateResult = await userManager.UpdateAsync(user);
+
+        if (!updateResult.Succeeded)
+        {
+            var errors = string.Join(
+                "; ",
+                updateResult.Errors.Select(error => error.Description));
+
+            return Result.Failure(new Error(
+                "Identity.SellerUnbanFailed",
+                ErrorType.Failure,
+                errors));
+        }
+
+        return Result.Success();
+    }
 }
