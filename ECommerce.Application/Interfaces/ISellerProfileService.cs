@@ -34,5 +34,9 @@ public interface ISellerProfileService
     Task<Result> DeleteSellerProfileByIdAsync(
             int id,
             CancellationToken cancellationToken);
+
+    Task<Result> BanSellerAsync(
+        int id,
+        CancellationToken cancellationToken);
 }
 

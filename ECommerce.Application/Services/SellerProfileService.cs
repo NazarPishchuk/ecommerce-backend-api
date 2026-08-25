@@ -296,4 +296,54 @@ public class SellerProfileService(ISellerProfileRepository sellerProfileReposito
 
         return Result.Success();
     }
+
+    public async Task<Result> BanSellerAsync(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        var sellerProfile = await sellerProfileRepository.GetByIdAsync(
+            id,
+            cancellationToken);
+
+        if (sellerProfile is null)
+        {
+            return Result.Failure(new Error(
+                "SellerProfile.NotFound",
+                ErrorType.NotFound,
+                "Seller profile was not found."));
+        }
+
+        await using var transaction =
+            await unitOfWork.BeginTransactionAsync(cancellationToken);
+
+        var banResult = await identityService.BanSellerAsync(
+            sellerProfile.UserId);
+
+        if (banResult.IsFailure)
+        {
+            return banResult;
+        }
+
+        var deleteResult = await DeleteSellerProfileDataAsync(
+            sellerProfile,
+            cancellationToken);
+
+        if (deleteResult.IsFailure)
+        {
+            return deleteResult;
+        }
+
+        var tokenVersionResult =
+            await identityService.IncrementTokenVersionAsync(
+                sellerProfile.UserId);
+
+        if (tokenVersionResult.IsFailure)
+        {
+            return tokenVersionResult;
+        }
+
+        await transaction.CommitAsync(cancellationToken);
+
+        return Result.Success();
+    }
 }
