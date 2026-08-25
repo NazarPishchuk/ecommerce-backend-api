@@ -1,7 +1,6 @@
 ﻿using ECommerce.Application.Interfaces;
 using ECommerce.Application.Results;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.IdentityModel.Tokens.Experimental;
 
 namespace ECommerce.Infrastructure.Identity;
 
@@ -203,6 +202,71 @@ public sealed class IdentityService(
 
         return Result<string>.Success(user.Id);
     }
+
+    public async Task<Result> AddToRoleAsync(string userId, string role)
+    {
+        var user = await userManager.FindByIdAsync(userId);
+
+        if (user is null)
+        {
+            return Result.Failure(
+                new Error(
+                    "Identity.UserNotFound",
+                    ErrorType.NotFound,
+                    "User was not found."));
+        }
+
+        var roleResult = await userManager.AddToRoleAsync(user, role);
+
+        if (!roleResult.Succeeded)
+        {
+            var errorMessage = string.Join(
+                "; ",
+                roleResult.Errors.Select(error => error.Description));
+
+            return Result.Failure(
+                new Error(
+                    "Identity.RoleAssignmentFailed",
+                    ErrorType.Validation,
+                    errorMessage));
+        }
+
+        return Result.Success();
+    }
+
+    public async Task<Result> RemoveFromRoleAsync(
+        string userId,
+        string role)
+    {
+        var user = await userManager.FindByIdAsync(userId);
+
+        if (user is null)
+        {
+            return Result.Failure(new Error(
+                "Identity.UserNotFound",
+                ErrorType.NotFound,
+                "User was not found."));
+        }
+
+        var roleResult = await userManager.RemoveFromRoleAsync(
+            user,
+            role);
+
+        if (!roleResult.Succeeded)
+        {
+            var errorMessage = string.Join(
+                "; ",
+                roleResult.Errors.Select(error => error.Description));
+
+            return Result.Failure(new Error(
+                "Identity.RoleRemovalFailed",
+                ErrorType.Validation,
+                errorMessage));
+        }
+
+        return Result.Success();
+    }
+
     public async Task<Result<string>> GetEmailAsync(string userId)
     {
         var user = await userManager.FindByIdAsync(userId);
