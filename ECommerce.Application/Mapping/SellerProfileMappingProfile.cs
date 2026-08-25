@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using ECommerce.Application.DTOs.Selllers;
+using ECommerce.Application.DTOs.Sellers;
 using ECommerce.Domain.Entities;
 
 namespace ECommerce.Application.Mapping;
@@ -9,6 +9,8 @@ public class SellerProfileMappingProfile : Profile
     public SellerProfileMappingProfile()
     {
         CreateMap<SellerProfile, GetSellerProfileDto>();
+
+        CreateMap<SellerProfile, GetSellerProfileListDto>();
 
         CreateMap<CreateSellerProfileDto, SellerProfile>()
             .ForMember(

@@ -1,4 +1,4 @@
-﻿namespace ECommerce.Application.DTOs.Selllers;
+﻿namespace ECommerce.Application.DTOs.Sellers;
 
 public class GetSellerProfileDto
 {
