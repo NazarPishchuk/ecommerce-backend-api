@@ -36,5 +36,5 @@ public abstract class ApiControllerBase : ControllerBase
     protected string CurrentUserId =>
         User.FindFirstValue(JwtRegisteredClaimNames.Sub)
         ?? throw new InvalidOperationException(
-            "Authenticated user doess not contain a 'sub' claim.");
+            "Authenticated user does not contain a 'sub' claim.");
 }
