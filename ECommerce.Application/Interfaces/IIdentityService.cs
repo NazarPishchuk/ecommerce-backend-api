@@ -48,4 +48,7 @@ public interface IIdentityService
 
     Task<Result> BanSellerAsync(
         string userId);
+
+    Task<Result> UnbanSellerAsync(
+        string userId);
 }
