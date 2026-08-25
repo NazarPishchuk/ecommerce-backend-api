@@ -4,15 +4,17 @@ namespace ECommerce.Application.Interfaces;
 
 public interface IIdentityService
 {
-    Task<bool> EmailExistsAsync(string email);
-    Task<Result<string>> CreateUserAsync(string firstName,
-                                string lastName,
-                                string email,
-                                string password,
-                                string role);        
+    Task<bool> EmailExistsAsync(
+       string email);
+    Task<Result<string>> CreateUserAsync(
+       string firstName,
+       string lastName,
+       string email,
+       string password,
+       string role);        
     Task<Result<string>> ValidateCredentialsAsync(
-                                string email,
-                                string password);
+        string email,
+        string password);
     Task<Result<IReadOnlyCollection<string>>> GetRolesAsync(
         string userId);
     Task<Result<string>> GenerateEmailConfirmationTokenAsync(
@@ -23,6 +25,15 @@ public interface IIdentityService
 
     Task<Result<string>>GetUnconfirmedUserIdByEmailAsync(
         string email);
+
+    Task<Result> AddToRoleAsync(
+        string userId,
+        string role);
+
+    Task<Result> RemoveFromRoleAsync(
+        string userId,
+        string role);
+
     Task<Result<string>> GetEmailAsync(
         string userId);
 
