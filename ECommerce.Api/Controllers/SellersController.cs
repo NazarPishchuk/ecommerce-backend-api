@@ -142,4 +142,20 @@ public class SellersController(ISellerProfileService sellerProfileService) : Api
 
         return NoContent();
     }
+
+    [Authorize(Roles = AppRoles.Admin)]
+    [HttpPatch("users/{userId}/unban")]
+    public async Task<IActionResult> UnbanSellerAsync(
+    string userId)
+    {
+        var result = await sellerProfileService.UnbanSellerAsync(
+            userId);
+
+        if (result.IsFailure)
+        {
+            return MapError(result.Error!);
+        }
+
+        return NoContent();
+    }
 }
