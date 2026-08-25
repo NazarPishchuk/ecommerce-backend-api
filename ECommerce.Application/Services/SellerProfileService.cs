@@ -20,8 +20,24 @@ public class SellerProfileService(ISellerProfileRepository sellerProfileReposito
         CreateSellerProfileDto dto, 
         CancellationToken cancellationToken)
     {
+        var sellerBanResult = await identityService.IsSellerBannedAsync(userId);
+
+        if (sellerBanResult.IsFailure)
+        {
+            return Result<CreateSellerProfileResponse>.Failure(
+                sellerBanResult.Error!);
+        }
+
+        if (sellerBanResult.Value == true)
+        {
+            return Result<CreateSellerProfileResponse>.Failure(new Error(
+                "SellerProfile.UserBanned",
+                ErrorType.Forbidden,
+                "User is banned from creating a seller profile."));
+        }
+
         var existingSellerProfile = await sellerProfileRepository.GetByUserIdAsNoTrackingAsync(
-            userId, 
+            userId,
             cancellationToken);
 
         if (existingSellerProfile is not null)
