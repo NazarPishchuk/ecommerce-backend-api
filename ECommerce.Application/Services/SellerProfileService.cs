@@ -346,4 +346,16 @@ public class SellerProfileService(ISellerProfileRepository sellerProfileReposito
 
         return Result.Success();
     }
+
+    public async Task<Result> UnbanSellerAsync(string userId)
+    {
+        var unbanResult = await identityService.UnbanSellerAsync(userId);
+
+        if (unbanResult.IsFailure)
+        {
+            return unbanResult;
+        }
+
+        return Result.Success();
+    }
 }
