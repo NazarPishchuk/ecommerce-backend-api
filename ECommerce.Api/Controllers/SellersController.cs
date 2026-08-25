@@ -124,4 +124,22 @@ public class SellersController(ISellerProfileService sellerProfileService) : Api
 
         return NoContent();
     }
+
+    [Authorize(Roles = AppRoles.Admin)]
+    [HttpPatch("{id:int}/ban")]
+    public async Task<IActionResult> BanSellerAsync(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        var result = await sellerProfileService.BanSellerAsync(
+            id,
+            cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return MapError(result.Error!);
+        }
+
+        return NoContent();
+    }
 }
