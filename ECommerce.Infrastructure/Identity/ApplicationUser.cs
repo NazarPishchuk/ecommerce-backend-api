@@ -8,4 +8,5 @@ public class ApplicationUser : IdentityUser
     public string LastName { get; set; } = null!;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public int TokenVersion { get; set; }
+    public bool IsSellerBanned { get; set; }
 }
