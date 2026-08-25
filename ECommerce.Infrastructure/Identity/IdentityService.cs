@@ -327,4 +327,50 @@ public sealed class IdentityService(
 
         return Result.Success();
     }
+
+    public async Task<Result<bool>> IsSellerBannedAsync(string userId)
+    {
+        var user = await userManager.FindByIdAsync(userId);
+
+        if (user is null)
+        {
+            return Result<bool>.Failure(new Error(
+                "Identity.UserNotFound",
+                ErrorType.NotFound,
+                "User was not found."));
+        }
+
+        return Result<bool>.Success(user.IsSellerBanned);
+    }
+
+    public async Task<Result> BanSellerAsync(string userId)
+    {
+        var user = await userManager.FindByIdAsync(userId);
+
+        if (user is null)
+        {
+            return Result.Failure(new Error(
+                "Identity.UserNotFound",
+                ErrorType.NotFound,
+                "User was not found."));
+        }
+
+        user.IsSellerBanned = true;
+
+        var updateResult = await userManager.UpdateAsync(user);
+
+        if (!updateResult.Succeeded)
+        {
+            var errors = string.Join(
+                "; ",
+                updateResult.Errors.Select(error => error.Description));
+
+            return Result.Failure(new Error(
+                "Identity.SellerBanFailed",
+                ErrorType.Failure,
+                errors));
+        }
+
+        return Result.Success();
+    }
 }

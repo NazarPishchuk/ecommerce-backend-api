@@ -42,4 +42,10 @@ public interface IIdentityService
 
     Task<Result> IncrementTokenVersionAsync(
         string userId);
+
+    Task<Result<bool>> IsSellerBannedAsync(
+        string userId);
+
+    Task<Result> BanSellerAsync(
+        string userId);
 }
