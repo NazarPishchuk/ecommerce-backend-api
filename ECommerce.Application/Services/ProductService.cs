@@ -43,7 +43,6 @@ public class ProductService(IUnitOfWork unitOfWork,
         }
 
         product.IsActive = true;
-        product.IsActive = true;
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
