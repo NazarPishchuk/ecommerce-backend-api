@@ -244,7 +244,7 @@ public class SellerProfileService(ISellerProfileRepository sellerProfileReposito
         int id, 
         CancellationToken cancellationToken)
     {
-        var sellerProfile = await sellerProfileRepository.GetByIdAsync(
+        var sellerProfile = await sellerProfileRepository.GetPublicByIdAsync(
             id,
             cancellationToken);
 
@@ -265,7 +265,7 @@ public class SellerProfileService(ISellerProfileRepository sellerProfileReposito
     public async Task<Result<IReadOnlyList<GetSellerProfileListDto>>> GetSellerProfileListAsync(
         CancellationToken cancellationToken)
     {
-        var sellerProfiles = await sellerProfileRepository.GetAllAsync(
+        var sellerProfiles = await sellerProfileRepository.GetAllPublicAsync(
             cancellationToken);
 
         var sellerProfileDtos = mapper.Map<IReadOnlyList<GetSellerProfileListDto>>(sellerProfiles);
@@ -396,5 +396,16 @@ public class SellerProfileService(ISellerProfileRepository sellerProfileReposito
         await transaction.CommitAsync(cancellationToken);
 
         return Result.Success();
+    }
+
+    public async Task<Result<IReadOnlyList<GetAdminSellerProfileDto>>> GetAdminSellerProfileListAsync(
+        CancellationToken cancellationToken)
+    {
+        var sellerProfiles =
+            await sellerProfileRepository.GetAllForAdminAsync(
+                cancellationToken);
+
+        return Result<IReadOnlyList<GetAdminSellerProfileDto>>.Success(
+            sellerProfiles);
     }
 }

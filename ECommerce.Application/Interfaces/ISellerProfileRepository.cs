@@ -1,4 +1,5 @@
-﻿using ECommerce.Domain.Entities;
+﻿using ECommerce.Application.DTOs.Sellers;
+using ECommerce.Domain.Entities;
 
 namespace ECommerce.Application.Interfaces;
 
@@ -16,10 +17,17 @@ public interface ISellerProfileRepository
         int id,
         CancellationToken cancellationToken);
 
-    Task<IReadOnlyList<SellerProfile>> GetAllAsync(
+    Task<IReadOnlyList<GetAdminSellerProfileDto>> GetAllForAdminAsync(
         CancellationToken cancellationToken);
 
     void Remove(SellerProfile sellerProfile);
 
     void Add(SellerProfile sellerProfile);
+
+    Task<SellerProfile?> GetPublicByIdAsync(
+        int id,
+        CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<SellerProfile>> GetAllPublicAsync(
+        CancellationToken cancellationToken);
 }

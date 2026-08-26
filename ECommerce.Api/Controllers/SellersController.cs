@@ -26,7 +26,6 @@ public class SellersController(ISellerProfileService sellerProfileService) : Api
         return Ok(result.Value);
     }
 
-
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<GetSellerProfileListDto>>> GetSellerProfileListAsync(
         CancellationToken cancellationToken)
@@ -107,57 +106,5 @@ public class SellersController(ISellerProfileService sellerProfileService) : Api
         return Ok(result.Value);
     }
 
-    [Authorize(Roles = AppRoles.Admin)]
-    [HttpDelete("{id:int}")]
-    public async Task<IActionResult> DeleteSellerProfileAsync(
-        int id,
-        CancellationToken cancellationToken)
-    {
-        var result = await sellerProfileService.DeleteSellerProfileByIdAsync(
-            id,
-            cancellationToken);
-
-        if (result.IsFailure)
-        {
-            return MapError(result.Error!);
-        }
-
-        return NoContent();
-    }
-
-    [Authorize(Roles = AppRoles.Admin)]
-    [HttpPatch("{id:int}/ban")]
-    public async Task<IActionResult> BanSellerAsync(
-        int id,
-        CancellationToken cancellationToken)
-    {
-        var result = await sellerProfileService.BanSellerAsync(
-            id,
-            cancellationToken);
-
-        if (result.IsFailure)
-        {
-            return MapError(result.Error!);
-        }
-
-        return NoContent();
-    }
-
-    [Authorize(Roles = AppRoles.Admin)]
-    [HttpPatch("{id::int}/unban")]
-    public async Task<IActionResult> UnbanSellerAsync(
-        int id,
-        CancellationToken cancellationToken)
-    {
-        var result = await sellerProfileService.UnbanSellerAsync(
-            id,
-            cancellationToken);
-
-        if (result.IsFailure)
-        {
-            return MapError(result.Error!);
-        }
-
-        return NoContent();
-    }
+    
 }

@@ -42,5 +42,8 @@ public interface ISellerProfileService
     Task<Result> UnbanSellerAsync(
         int id,
         CancellationToken cancellationToken);
+
+    Task<Result<IReadOnlyList<GetAdminSellerProfileDto>>> GetAdminSellerProfileListAsync(
+        CancellationToken cancellationToken);
 }
 
