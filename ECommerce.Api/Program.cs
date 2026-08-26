@@ -95,6 +95,10 @@ builder.Services.AddDbContext<ECommerceDbContext>(options =>
 
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
+builder.Services.AddScoped<ICartRepository, CartRepository>();
+
+builder.Services.AddScoped<ICartService, CartService>();
+
 builder.Services.AddScoped<IUnitOfWork>(sp =>
     sp.GetRequiredService<ECommerceDbContext>());
 

@@ -1,8 +1,9 @@
 ﻿using ECommerce.Application.Authorization;
 using ECommerce.Application.DTOs.Authentication;
 using ECommerce.Application.Interfaces;
-using ECommerce.Contracts.Messaging;
 using ECommerce.Application.Results;
+using ECommerce.Contracts.Messaging;
+using ECommerce.Domain.Entities;
 
 namespace ECommerce.Application.Services;
 
@@ -10,7 +11,8 @@ public sealed class AuthService(
                 IIdentityService identityService,
                 IJwtTokenGenerator jwtTokenGenerator,
                 IUnitOfWork unitOfWork,
-                IOutboxWriter outboxWriter) : IAuthService
+                IOutboxWriter outboxWriter,
+                ICartRepository cartRepository) : IAuthService
 {
     public async Task<Result<RegisterResponse>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken)
     {
@@ -42,6 +44,13 @@ public sealed class AuthService(
         }
 
         var userId = createResult.Value!;
+
+        var cart = new Cart
+        {
+            UserId = userId
+        };
+
+        cartRepository.Add(cart);
 
         var tokenResult = await identityService.GenerateEmailConfirmationTokenAsync(userId);
 

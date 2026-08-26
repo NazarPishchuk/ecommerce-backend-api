@@ -94,4 +94,24 @@ public class SellerProfileRepository(ECommerceDbContext dbContext) : ISellerProf
                             !user.IsSellerBanned))
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<IReadOnlySet<int>> GetBannedSellerProfileIdsAsync(
+        IEnumerable<int> sellerProfileIds,
+        CancellationToken cancellationToken)
+    {
+        var ids = sellerProfileIds
+            .Distinct()
+            .ToArray();
+
+        var bannedIds = await (
+            from sellerProfile in dbContext.SellerProfiles
+            join user in dbContext.Users
+                on sellerProfile.UserId equals user.Id
+            where ids.Contains(sellerProfile.Id) &&
+                  user.IsSellerBanned
+            select sellerProfile.Id)
+            .ToListAsync(cancellationToken);
+
+        return bannedIds.ToHashSet();
+    }
 }

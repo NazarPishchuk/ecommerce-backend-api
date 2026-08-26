@@ -4,17 +4,17 @@ namespace ECommerce.Application.DTOs.CartItems;
 
 public class GetCartItemDto
 {
-    public int Id { get; set; }
+    public int Id { get; set; } //auto
 
-    public int ProductId { get; set; }
+    public int ProductId { get; set; } //auto
 
-    public string ProductName { get; set; } = null!;
+    public string ProductName { get; set; } = null!; //select from np
 
-    public decimal Price { get; set; }
+    public decimal Price { get; set; } //selecrt from np
 
-    public int Quantity { get; set; }
+    public int Quantity { get; set; } //auto
 
-    public int AvailableQuantity { get; set; }
+    public int AvailableQuantity { get; set; } // select from np
 
-    public CartItemAvailabilityStatus AvailabilityStatus { get; set; }
+    public CartItemAvailabilityStatus AvailabilityStatus { get; set; } //wil be defined in service
 }

@@ -30,4 +30,8 @@ public interface ISellerProfileRepository
 
     Task<IReadOnlyList<SellerProfile>> GetAllPublicAsync(
         CancellationToken cancellationToken);
+
+    Task<IReadOnlySet<int>> GetBannedSellerProfileIdsAsync(
+        IEnumerable<int> sellerProfileIds,
+        CancellationToken cancellationToken);
 }
