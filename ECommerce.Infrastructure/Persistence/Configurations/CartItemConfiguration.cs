@@ -13,5 +13,9 @@ public class CartItemConfiguration : IEntityTypeConfiguration<CartItem>
             .WithMany()
             .HasForeignKey(x => x.ProductId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder
+            .HasIndex(x => new { x.CartId, x.ProductId })
+            .IsUnique();
     }
 }
