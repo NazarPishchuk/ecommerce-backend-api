@@ -14,10 +14,14 @@ public class ProductRepository(ECommerceDbContext dbContext) : IProductRepositor
             .Include(x => x.Category)
             .Include(x => x.SellerProfile)
             .Where(x =>
-            x.IsActive &&
-            !x.IsBlocked &&
-            x.SellerProfileId.HasValue)
-            .ToListAsync(cancellationToken); 
+                x.IsActive &&
+                !x.IsBlocked &&
+                x.SellerProfileId.HasValue &&
+                dbContext.Users.Any(
+                    user =>
+                        user.Id == x.SellerProfile!.UserId &&
+                        !user.IsSellerBanned))
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<Product?> GetByIdAsync(
@@ -28,11 +32,16 @@ public class ProductRepository(ECommerceDbContext dbContext) : IProductRepositor
             .AsNoTracking()
             .Include(x => x.SellerProfile)
             .Include(x => x.Category)
-            .FirstOrDefaultAsync(x =>
-                x.Id == id &&
-                x.IsActive &&
-                !x.IsBlocked &&
-                x.SellerProfileId.HasValue,
+            .FirstOrDefaultAsync(
+                x =>
+                    x.Id == id &&
+                    x.IsActive &&
+                    !x.IsBlocked &&
+                    x.SellerProfileId.HasValue &&
+                    dbContext.Users.Any(
+                        user =>
+                            user.Id == x.SellerProfile!.UserId &&
+                            !user.IsSellerBanned),
                 cancellationToken);
     }
 
