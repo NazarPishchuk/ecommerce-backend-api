@@ -8,5 +8,24 @@ public interface ICartRepository
         string userId,
         CancellationToken cancellationToken);
 
+    Task<Cart?> GetByUserIdAsync(
+        string userId,
+        CancellationToken cancellationToken);
+
+    Task<CartItem?> GetItemByProductIdAsync(
+        int cartId,
+        int productId,
+        CancellationToken cancellationToken);
+
+    Task<bool> TryIncreaseItemQuantityAsync(
+        int cartId,
+        int productId,
+        int quantity,
+        CancellationToken cancellationToken);
+
+    Task<bool> TryAddItemAsync(
+        CartItem cartItem,
+        CancellationToken cancellationToken);
+
     void Add(Cart cart);
 }

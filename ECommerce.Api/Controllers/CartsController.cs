@@ -1,4 +1,5 @@
-﻿using ECommerce.Application.DTOs.Carts;
+﻿using ECommerce.Application.DTOs.CartItems;
+using ECommerce.Application.DTOs.Carts;
 using ECommerce.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -6,13 +7,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace ECommerce.Api.Controllers;
 
 [Route("api/carts")]
+[Authorize]
 [ApiController]
 public class CartsController(
     ICartService cartService) : ApiControllerBase
 {
-    [Authorize]
     [HttpGet]
-    public async Task<ActionResult<GetCartDto>> GetCarAsync(
+    public async Task<ActionResult<GetCartDto>> GetCartAsync(
         CancellationToken cancellationToken)
     {
         var result = await cartService.GetMineAsync(
@@ -20,5 +21,23 @@ public class CartsController(
             cancellationToken);
 
         return Ok(result.Value);
+    }
+
+    [HttpPost("items")]
+    public async Task<IActionResult> AddCartItem(
+        AddCartItemDto dto,
+        CancellationToken cancellationToken)
+    {
+        var result = await cartService.AddCartItemAsync(
+            CurrentUserId,
+            dto,
+            cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return MapError(result.Error!);
+        }
+
+        return NoContent();
     }
 }
