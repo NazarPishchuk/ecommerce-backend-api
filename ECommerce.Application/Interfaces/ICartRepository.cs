@@ -27,5 +27,10 @@ public interface ICartRepository
         CartItem cartItem,
         CancellationToken cancellationToken);
 
+    Task<CartItem?> GetItemByIdAsync(
+        int cartId,
+        int itemId,
+        CancellationToken cancellationToken);
+
     void Add(Cart cart);
 }

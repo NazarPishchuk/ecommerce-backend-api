@@ -44,6 +44,19 @@ public class CartRepository(
                 cancellationToken);
     }
 
+    public async Task<CartItem?> GetItemByIdAsync(
+        int cartId,
+        int itemId,
+        CancellationToken cancellationToken)
+    {
+        return await dbContext.CartItems
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x =>
+                x.CartId == cartId &&
+                x.Id == itemId,
+                cancellationToken);
+    }
+
     public async Task<bool> TryIncreaseItemQuantityAsync(
         int cartId,
         int productId,
