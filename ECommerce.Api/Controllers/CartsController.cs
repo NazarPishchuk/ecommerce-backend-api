@@ -17,7 +17,7 @@ public class CartsController(
         CancellationToken cancellationToken)
     {
         var result = await cartService.GetMineAsync(
-            CurrentUserId, 
+            CurrentUserId,
             cancellationToken);
 
         return Ok(result.Value);
@@ -31,6 +31,24 @@ public class CartsController(
         var result = await cartService.AddCartItemAsync(
             CurrentUserId,
             dto,
+            cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return MapError(result.Error!);
+        }
+
+        return NoContent();
+    }
+
+    [HttpPatch("items/{id:int}/increment")]
+    public async Task<IActionResult> IncrementCartItemAsync(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        var result = await cartService.IncrementCartItemAsync(
+            id,
+            CurrentUserId,
             cancellationToken);
 
         if (result.IsFailure)

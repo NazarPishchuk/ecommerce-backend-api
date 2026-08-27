@@ -198,15 +198,72 @@ public class CartService(
             dto.Quantity,
             cancellationToken);
 
-        if (itemUpdated)
+        if (!itemUpdated)
         {
-            return Result.Success();
+            return Result.Failure(new Error(
+                "Cart.InsufficientStock",
+                ErrorType.Conflict,
+                "The requested quantity exceeds the available stock."));
         }
 
-        return Result.Failure(new Error(
-            "Cart.InsufficientStock",
-            ErrorType.Conflict,
-            "The requested quantity exceeds the available stock."));
+        return Result.Success();
+    }
+
+    public async Task<Result> IncrementCartItemAsync(
+        int itemId,
+        string userId,
+        CancellationToken cancellationToken)
+    {
+        var cart = await cartRepository.GetByUserIdAsync(
+            userId,
+            cancellationToken);
+
+        if (cart is null)
+        {
+            throw new InvalidOperationException(
+                $"Cart was not found for user '{userId}'.");
+        }
+
+        var cartItem = await cartRepository.GetItemByIdAsync(
+            cart.Id,
+            itemId,
+            cancellationToken);
+
+        if (cartItem is null)
+        {
+            return Result.Failure(new Error(
+                "CartItem.NotFound",
+                ErrorType.NotFound,
+                "Cart item with this id was not found."));
+        }
+
+        var product = await productRepository.GetByIdAsync(
+            cartItem.ProductId,
+            cancellationToken);
+
+        if (product is null)
+        {
+            return Result.Failure(new Error(
+                "Product.Unavailable",
+                ErrorType.Conflict,
+                "Product is currently unavailable."));
+        }
+
+        var itemUpdated = await cartRepository.TryIncreaseItemQuantityAsync(
+            cart.Id, 
+            cartItem.ProductId, 
+            1, 
+            cancellationToken);
+
+        if (!itemUpdated)
+        {
+            return Result.Failure(new Error(
+                "Cart.InsufficientStock",
+                ErrorType.Conflict,
+                "The requested quantity exceeds the available stock."));
+        }
+
+        return Result.Success();
     }
 }
 

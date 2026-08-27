@@ -14,4 +14,9 @@ public interface ICartService
         string userid,
         AddCartItemDto dto,
         CancellationToken cancellationToken);
+
+    Task<Result> IncrementCartItemAsync(
+        int itemId,
+        string userid,
+        CancellationToken cancellationToken);
 }
