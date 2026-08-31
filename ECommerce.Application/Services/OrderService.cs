@@ -1,4 +1,6 @@
-﻿using ECommerce.Application.Interfaces;
+﻿using AutoMapper;
+using ECommerce.Application.DTOs.Orders;
+using ECommerce.Application.Interfaces;
 using ECommerce.Application.Results;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Enums;
@@ -11,7 +13,8 @@ public class OrderService(
     ISellerProfileRepository sellerProfileRepository,
     IUnitOfWork unitOfWork,
     IProductRepository productRepository,
-    IOrderRepository orderRepository) : IOrderService
+    IOrderRepository orderRepository,
+    IMapper mapper) : IOrderService
 {
     public async Task<Result> CheckoutAsync(
         string userId,
@@ -164,4 +167,18 @@ public class OrderService(
 
         return Result.Success();
     }
+
+    public async Task<Result<IReadOnlyList<GetOrderListDto>>> GetMineAsync(
+        string userId,
+        CancellationToken cancellationToken)
+    {
+        var orders = await orderRepository.GetByUserIdAsync(
+            userId, 
+            cancellationToken);
+
+        var dto = mapper.Map<IReadOnlyList<GetOrderListDto>>(orders);
+
+        return Result<IReadOnlyList<GetOrderListDto>>.Success(dto);
+    }
+
 }
