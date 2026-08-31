@@ -41,5 +41,9 @@ public interface ICartRepository
         int itemId,
         CancellationToken cancellationToken);
 
+    Task DeleteAllItemsAsync(
+        int cartId,
+        CancellationToken cancellationToken);
+
     void Add(Cart cart);
 }

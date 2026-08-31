@@ -120,6 +120,10 @@ builder.Services.AddScoped<IProductService, ProductService>();
 
 builder.Services.AddScoped<ISellerProfileRepository, SellerProfileRepository>();
 
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+
+builder.Services.AddScoped<IOrderService, OrderService>();
+
 
 builder.Services.Configure<JwtOptions>(
     builder.Configuration.GetSection(JwtOptions.SectionName));
