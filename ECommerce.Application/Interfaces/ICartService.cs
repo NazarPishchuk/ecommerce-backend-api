@@ -17,6 +17,17 @@ public interface ICartService
 
     Task<Result> IncrementCartItemAsync(
         int itemId,
-        string userid,
+        string userId,
+        CancellationToken cancellationToken);
+
+    Task<Result> DecrementCartItemAsync(
+        int itemId,
+        string userId,
+        CancellationToken cancellationToken);
+
+    Task<Result> DeleteCartItemAsync(
+        int itemId,
+        string userId,
         CancellationToken cancellationToken);
 }
+
