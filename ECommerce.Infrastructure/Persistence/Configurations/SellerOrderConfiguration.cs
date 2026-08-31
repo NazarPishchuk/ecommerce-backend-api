@@ -23,5 +23,9 @@ public class SellerOrderConfiguration
             .WithMany()
             .HasForeignKey(x => x.SellerProfileId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Property(x => x.Status)
+            .HasConversion<string>()
+            .HasMaxLength(50);
     }
 }

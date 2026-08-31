@@ -19,5 +19,9 @@ public class OrderConfiguration
             .WithMany()
             .HasForeignKey(x => x.UserId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(x => x.Status)
+          .HasConversion<string>()
+          .HasMaxLength(50);
     }
 }

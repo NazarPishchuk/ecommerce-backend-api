@@ -134,6 +134,14 @@ public class CartRepository(
         return affectedRows == 1;
     }
 
+    public async Task DeleteAllItemsAsync(
+        int cartId,
+        CancellationToken cancellationToken)
+    {
+        await dbContext.CartItems
+            .Where(x => x.CartId == cartId)
+            .ExecuteDeleteAsync(cancellationToken);
+    }
     public void Add(Cart cart)
     {
         dbContext.Carts.Add(cart);

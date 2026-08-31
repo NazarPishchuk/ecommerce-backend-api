@@ -113,6 +113,27 @@ public class ProductRepository(ECommerceDbContext dbContext) : IProductRepositor
                 cancellationToken);
     }
 
+    public async Task<bool> TryDecreaseStockAsync(
+            int productId,
+            int quantity,
+            CancellationToken cancellationToken)
+    {
+        var affectedRows = await dbContext.Products
+            .Where(product =>
+                product.Id == productId &&
+                product.IsActive &&
+                !product.IsBlocked &&
+                product.SellerProfileId.HasValue &&
+                product.Quantity >= quantity)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(
+                    product => product.Quantity,
+                    product => product.Quantity - quantity),
+                cancellationToken);
+
+        return affectedRows == 1;
+    }
+
     public void Add(Product product)
     {
         dbContext.Products.Add(product);
