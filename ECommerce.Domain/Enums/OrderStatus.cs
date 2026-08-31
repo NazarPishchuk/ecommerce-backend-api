@@ -4,7 +4,7 @@
     {
         Pending,
         Paid,
-        Processing,
+        PartiallyRejected,
         Shipped,
         Delivered,
         Cancelled
