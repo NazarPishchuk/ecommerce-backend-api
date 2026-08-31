@@ -78,6 +78,27 @@ public class CartRepository(
         return affectedRows == 1;
     }
 
+    public async Task<bool> TryDecrementItemQuantityAsync(
+        int cartId,
+        int itemId,
+        CancellationToken cancellationToken)
+    {
+        var affectedRows = await dbContext.CartItems
+            .Where(x =>
+                x.CartId == cartId &&
+                x.Id == itemId &&
+                x.Quantity > 1)
+            .ExecuteUpdateAsync(
+                setters => setters
+                    .SetProperty(
+                    x => x.Quantity,
+                    x => x.Quantity - 1),
+                cancellationToken);
+
+        return affectedRows == 1;
+
+    }
+
     public async Task<bool> TryAddItemAsync(
        CartItem cartItem,
        CancellationToken cancellationToken)
@@ -99,6 +120,20 @@ public class CartRepository(
         }
     }
 
+    public async Task<bool> DeleteItemAsync(
+        int cartId,
+        int itemId,
+        CancellationToken cancellationToken)
+    {
+        var affectedRows = await dbContext.CartItems
+            .Where(x =>
+                x.Id == itemId &&
+                x.CartId == cartId)
+            .ExecuteDeleteAsync(cancellationToken);
+
+        return affectedRows == 1;
+    }
+
     public void Add(Cart cart)
     {
         dbContext.Carts.Add(cart);
@@ -111,5 +146,4 @@ public class CartRepository(
                (sqlException.Number == 2601 ||
                 sqlException.Number == 2627);
     }
-
 }

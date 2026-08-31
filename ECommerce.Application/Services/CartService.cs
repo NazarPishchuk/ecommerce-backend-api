@@ -265,5 +265,89 @@ public class CartService(
 
         return Result.Success();
     }
-}
 
+    public async Task<Result> DecrementCartItemAsync(
+        int itemId,
+        string userId,
+        CancellationToken cancellationToken)
+    {
+        var cart = await cartRepository.GetByUserIdAsync(
+            userId,
+            cancellationToken);
+
+        if (cart is null)
+        {
+            throw new InvalidOperationException(
+                $"Cart was not found for user '{userId}'.");
+        }
+
+        var cartItem = await cartRepository.GetItemByIdAsync(
+            cart.Id,
+            itemId,
+            cancellationToken);
+
+        if (cartItem is null)
+        {
+            return Result.Failure(new Error(
+                "CartItem.NotFound",
+                ErrorType.NotFound,
+                "Cart item with this id was not found."));
+        }
+        
+        if(cartItem.Quantity == 1)
+        {
+            await cartRepository.DeleteItemAsync(
+                cart.Id,
+                itemId,
+                cancellationToken);
+
+            return Result.Success();
+        }
+
+        var itemUpdated = await cartRepository.TryDecrementItemQuantityAsync(
+            cart.Id,
+            itemId,
+            cancellationToken);
+
+        if (!itemUpdated)
+        {
+            return Result.Failure(new Error(
+                "CartItem.UpdateConflict",
+                ErrorType.Conflict,
+                "Cart item could not be updated. Please refresh your cart and try again."));
+        }
+
+        return Result.Success();
+    }
+
+    public async Task<Result> DeleteCartItemAsync(
+        int itemId,
+        string userId,
+        CancellationToken cancellationToken)
+    {
+        var cart = await cartRepository.GetByUserIdAsync(
+            userId, 
+            cancellationToken);
+
+        if (cart is null)
+        {
+            throw new InvalidOperationException(
+                $"Cart was not found for user '{userId}'.");
+        }
+
+        var itemDeleted = await cartRepository.DeleteItemAsync(
+            cart.Id,
+            itemId,
+            cancellationToken);
+
+        if (!itemDeleted)
+        {
+            return Result.Failure(new Error(
+                "CartItem.NotFound",
+                ErrorType.NotFound,
+                "Cart item with this id was not found."));
+        }
+
+        return Result.Success();
+    }
+}

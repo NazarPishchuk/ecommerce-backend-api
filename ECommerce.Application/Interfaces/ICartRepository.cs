@@ -29,6 +29,15 @@ public interface ICartRepository
 
     Task<CartItem?> GetItemByIdAsync(
         int cartId,
+        int userId,
+        CancellationToken cancellationToken);
+
+    Task<bool> TryDecrementItemQuantityAsync(
+        int cartId,
+        int itemId,
+        CancellationToken cancellationToken);
+    Task<bool> DeleteItemAsync(
+        int cartId,
         int itemId,
         CancellationToken cancellationToken);
 

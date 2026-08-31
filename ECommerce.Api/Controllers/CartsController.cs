@@ -58,4 +58,40 @@ public class CartsController(
 
         return NoContent();
     }
+
+    [HttpPatch("items/{id:int}/decrement")]
+    public async Task<IActionResult> DecrementCartItemAsync(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        var result = await cartService.DecrementCartItemAsync(
+            id,
+            CurrentUserId,
+            cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return MapError(result.Error!);
+        }
+
+        return NoContent();
+    }
+
+    [HttpDelete("items/{id:int}")]
+    public async Task<IActionResult> DeleteCartItemAsync(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        var result = await cartService.DeleteCartItemAsync(
+            id,
+            CurrentUserId,
+            cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return MapError(result.Error!);
+        }
+
+        return NoContent();
+    }
 }
