@@ -1,6 +1,7 @@
 ﻿using ECommerce.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ECommerce.Application.DTOs.Orders;
 
 
 namespace ECommerce.Api.Controllers;
@@ -22,5 +23,16 @@ public class OrdersController(
         }
 
         return Created();
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<IReadOnlyList<GetOrderListDto>>> GetMineAsync(
+    CancellationToken cancellationToken)
+    {
+        var result = await orderService.GetMineAsync(
+            CurrentUserId,
+            cancellationToken);
+
+        return Ok(result.Value);
     }
 }
