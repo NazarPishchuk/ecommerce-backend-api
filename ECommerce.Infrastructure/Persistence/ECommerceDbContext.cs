@@ -29,7 +29,7 @@ public class ECommerceDbContext : IdentityDbContext<ApplicationUser>, IUnitOfWor
     public DbSet<OrderItem> OrderItems { get; set; }
     public DbSet<SellerProfile> SellerProfiles { get; set; }
     public DbSet<OutboxMessage> OutboxMessages { get; set; }
-
+    public DbSet<SellerOrder> SellerOrders { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
