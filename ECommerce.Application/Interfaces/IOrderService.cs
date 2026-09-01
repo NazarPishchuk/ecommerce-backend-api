@@ -1,6 +1,7 @@
-﻿using ECommerce.Application.Results;
+﻿using ECommerce.Application.DTOs.Orders.Admin;
 using ECommerce.Application.DTOs.Orders.Customer;
 using ECommerce.Application.DTOs.Orders.Seller;
+using ECommerce.Application.Results;
 
 namespace ECommerce.Application.Interfaces;
 
@@ -41,5 +42,8 @@ public interface IOrderService
     Task<Result> RejectSellerOrderAsync(
         int id,
         string userId,
+        CancellationToken cancellationToken);
+
+    Task<Result<IReadOnlyList<GetAdminOrderListDto>>> GetAllForAdminAsync(
         CancellationToken cancellationToken);
 }

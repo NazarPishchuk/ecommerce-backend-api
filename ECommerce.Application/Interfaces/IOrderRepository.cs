@@ -47,4 +47,7 @@ public interface IOrderRepository
     Task RecalculateOrderStatusAsync(
         int orderId,
         CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<Order>> GetAllAsync(
+        CancellationToken cancellationToken);
 }

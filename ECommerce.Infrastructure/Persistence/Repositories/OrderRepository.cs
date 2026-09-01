@@ -167,5 +167,14 @@ public class OrderRepository(
 
         return affectedRows == 1;
     }
+
+    public async Task<IReadOnlyList<Order>> GetAllAsync(
+        CancellationToken cancellationToken)
+    {
+        return await dbContext.Orders
+            .AsNoTracking()
+            .OrderByDescending(x => x.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
 }
 
