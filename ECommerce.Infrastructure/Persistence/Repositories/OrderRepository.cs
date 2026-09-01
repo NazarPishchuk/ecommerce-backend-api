@@ -98,4 +98,38 @@ public class OrderRepository(
                     x.SellerProfile.UserId == userId,
                 cancellationToken);
     }
+
+    public async Task<bool> TryConfirmSellerOrderAsync(
+        int id,
+        string userId,
+        CancellationToken cancellationToken)
+    {
+        var affectedRows = await dbContext.SellerOrders
+            .Where(x => x.Id == id &&
+                   x.SellerProfile!.UserId == userId &&
+                   x.Status == SellerOrderStatus.Pending)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(
+                    x => x.Status,
+                    SellerOrderStatus.Confirmed),
+                cancellationToken);
+
+        return affectedRows == 1;
+    }
+
+    public async Task MarkOrderAsProcessingAsync(
+        int orderId,
+        CancellationToken cancellationToken)
+    {
+        await dbContext.Orders
+            .Where(x =>
+                x.Id == orderId &&
+                x.Status == OrderStatus.Pending)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(
+                    x => x.Status,
+                    OrderStatus.Processing),
+                cancellationToken);
+    }
 }
+

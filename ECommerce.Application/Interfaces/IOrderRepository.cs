@@ -33,4 +33,13 @@ public interface IOrderRepository
         int id,
         string userId,
         CancellationToken cancellationToken);
+
+    Task<bool> TryConfirmSellerOrderAsync(
+        int id,
+        string userId,
+        CancellationToken cancellationToken);
+
+    Task MarkOrderAsProcessingAsync(
+        int orderId,
+        CancellationToken cancellationToken);
 }

@@ -298,4 +298,51 @@ public class OrderService(
 
         return Result<GetSellerOrderDetailsDto>.Success(dto);
     }
+
+    public async Task<Result> ConfirmSellerOrderAsync(
+        int id,
+        string userId,
+        CancellationToken cancellationToken)
+    {
+        var sellerOrder =
+            await orderRepository.GetSellerOrderByIdAndUserIdAsync(
+                id,
+                userId,
+                cancellationToken);
+
+        if (sellerOrder is null)
+        {
+            return Result.Failure(new Error(
+                "SellerOrder.NotFound",
+                ErrorType.NotFound,
+                "Seller order with this id was not found."));
+        }
+
+        await using var transaction =
+            await unitOfWork.BeginTransactionAsync(
+                cancellationToken);
+
+        var confirmed =
+            await orderRepository.TryConfirmSellerOrderAsync(
+                id,
+                userId,
+                cancellationToken);
+
+        if (!confirmed)
+        {
+            return Result.Failure(new Error(
+                "SellerOrder.Conflict",
+                ErrorType.Conflict,
+                "Seller order is no longer pending."));
+        }
+
+        await orderRepository.MarkOrderAsProcessingAsync(
+            sellerOrder.OrderId,
+            cancellationToken);
+
+        await transaction.CommitAsync(
+            cancellationToken);
+
+        return Result.Success();
+    }
 }

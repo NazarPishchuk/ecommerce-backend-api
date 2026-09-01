@@ -44,4 +44,22 @@ public class SellerOrdersController(
 
         return Ok(result.Value);
     }
+
+    [HttpPatch("{id:int}/confirm")]
+    public async Task<IActionResult> ConfirmAsync(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        var result = await orderService.ConfirmSellerOrderAsync(
+            id,
+            CurrentUserId,
+            cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return MapError(result.Error!);
+        }
+
+        return NoContent();
+    }
 }
