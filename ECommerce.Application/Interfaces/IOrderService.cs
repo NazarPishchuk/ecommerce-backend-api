@@ -17,5 +17,9 @@ public interface IOrderService
         int id,
         string userId,
         CancellationToken cancellationToken);
-    
+
+    Task<Result> CancelAsync(
+        int id,
+        string userId,
+        CancellationToken cancellationToken);
 }

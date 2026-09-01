@@ -202,4 +202,59 @@ public class OrderService(
 
         return Result<GetOrderDto>.Success(dto);
     }
+
+    public async Task<Result> CancelAsync(
+        int id,
+        string userId,
+        CancellationToken cancellationToken)
+    {
+        var order = await orderRepository.GetByIdAndUserIdForUpdateAsync(
+            id,
+            userId,
+            cancellationToken);
+
+        if (order is null)
+        {
+            return Result.Failure(new Error(
+                "Order.NotFound",
+                ErrorType.NotFound,
+                "Order with this id was not found."));
+        }
+
+        await using var transaction = await unitOfWork.BeginTransactionAsync(
+            cancellationToken);
+
+        var cancelled =
+            await orderRepository.TryCancelPendingSellerOrdersAsync(
+                id,
+                userId,
+                cancellationToken);
+
+        if (!cancelled)
+        {
+            return Result.Failure(new Error(
+                "SellerOrder.Conflict",
+                ErrorType.Conflict,
+                "At least one seller order is no longer pending."));
+        }
+
+        order.Status = OrderStatus.Cancelled;
+
+        foreach (var sellerOrder in order.SellerOrders)
+        {
+            foreach(var orderItem in sellerOrder.OrderItems)
+            {
+                await productRepository.IncreaseStockAsync(
+                    orderItem.ProductId, 
+                    orderItem.Quantity,
+                    cancellationToken);
+            }
+        }
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await transaction.CommitAsync(cancellationToken);
+
+        return Result.Success();
+    }
 }

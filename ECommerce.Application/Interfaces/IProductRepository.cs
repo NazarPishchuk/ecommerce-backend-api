@@ -42,6 +42,11 @@ public interface IProductRepository
         int quantity,
         CancellationToken cancellationToken);
 
+    Task IncreaseStockAsync(
+        int productId,
+        int quantity,
+        CancellationToken cancellationToken);
+
     void Add(Product product);
 }
 

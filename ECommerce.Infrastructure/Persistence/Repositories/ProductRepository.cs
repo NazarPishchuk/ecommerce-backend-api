@@ -134,6 +134,20 @@ public class ProductRepository(ECommerceDbContext dbContext) : IProductRepositor
         return affectedRows == 1;
     }
 
+    public async Task IncreaseStockAsync(
+        int productId,
+        int quantity,
+        CancellationToken cancellationToken)
+    {
+        await dbContext.Products
+            .Where(x => x.Id == productId)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(
+                    x => x.Quantity,
+                    x => x.Quantity + quantity),
+                cancellationToken);
+    }
+
     public void Add(Product product)
     {
         dbContext.Products.Add(product);

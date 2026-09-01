@@ -14,4 +14,14 @@ public interface IOrderRepository
         int id,
         string userId,
         CancellationToken cancellationToken);
+
+    Task<Order?> GetByIdAndUserIdForUpdateAsync(
+        int id,
+        string userId,
+        CancellationToken cancellationToken);
+
+    Task<bool> TryCancelPendingSellerOrdersAsync(
+        int orderId,
+        string userId,
+        CancellationToken cancellationToken);
 }
