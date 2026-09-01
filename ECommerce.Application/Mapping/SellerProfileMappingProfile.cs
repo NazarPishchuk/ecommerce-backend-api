@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using ECommerce.Application.DTOs.Orders;
+using ECommerce.Application.DTOs.Orders.Seller;
 using ECommerce.Application.DTOs.Sellers;
 using ECommerce.Domain.Entities;
 
@@ -27,5 +29,7 @@ public class SellerProfileMappingProfile : Profile
             .ForMember(
                 dest => dest.Description,
                 opt => opt.MapFrom(src => src.Description.Trim()));
+
+        
     }
 }

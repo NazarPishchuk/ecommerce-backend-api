@@ -24,4 +24,13 @@ public interface IOrderRepository
         int orderId,
         string userId,
         CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<SellerOrder>> GetSellerOrdersByUserIdAsync(
+        string userId,
+        CancellationToken cancellationToken);
+
+    Task<SellerOrder?> GetSellerOrderByIdAndUserIdAsync(
+        int id,
+        string userId,
+        CancellationToken cancellationToken);
 }

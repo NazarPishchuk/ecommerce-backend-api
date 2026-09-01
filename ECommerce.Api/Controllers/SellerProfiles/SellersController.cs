@@ -5,7 +5,7 @@ using ECommerce.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ECommerce.Api.Controllers;
+namespace ECommerce.Api.Controllers.SellerProfiles;
 
 [Route("api/sellerprofiles")]
 [ApiController]

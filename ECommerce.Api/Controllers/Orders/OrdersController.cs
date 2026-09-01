@@ -1,10 +1,10 @@
 ﻿using ECommerce.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ECommerce.Application.DTOs.Orders;
+using ECommerce.Application.DTOs.Orders.Customer;
 
 
-namespace ECommerce.Api.Controllers;
+namespace ECommerce.Api.Controllers.Orders;
 
 [Route("api/orders")]
 [ApiController]
@@ -13,9 +13,12 @@ public class OrdersController(
 {
     [Authorize]
     [HttpPost]
-    public async Task<IActionResult> CreateOrderAsync(CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateOrderAsync(
+        CancellationToken cancellationToken)
     {
-        var result = await orderService.CheckoutAsync(CurrentUserId, cancellationToken);
+        var result = await orderService.CheckoutAsync(
+            CurrentUserId, 
+            cancellationToken);
 
         if (result.IsFailure)
         {

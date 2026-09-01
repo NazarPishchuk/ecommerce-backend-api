@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
-using ECommerce.Application.DTOs.Orders;
+using ECommerce.Application.DTOs.Orders.Customer;
+using ECommerce.Application.DTOs.Orders.Seller;
 using ECommerce.Application.Interfaces;
 using ECommerce.Application.Results;
 using ECommerce.Domain.Entities;
@@ -256,5 +257,45 @@ public class OrderService(
         await transaction.CommitAsync(cancellationToken);
 
         return Result.Success();
+    }
+
+    public async Task<Result<IReadOnlyList<GetSellerOrderListDto>>> GetMineSellerOrdersAsync(
+        string userId,
+        CancellationToken cancellationToken)
+    {
+        var sellerOrders =
+            await orderRepository.GetSellerOrdersByUserIdAsync(
+                userId,
+                cancellationToken);
+
+        var dto = mapper.Map<IReadOnlyList<GetSellerOrderListDto>>(
+            sellerOrders);
+
+        return Result<IReadOnlyList<GetSellerOrderListDto>>.Success(dto);
+    }
+
+    public async Task<Result<GetSellerOrderDetailsDto>> GetMineSellerOrderByIdAsync(
+        int id,
+        string userId,
+        CancellationToken cancellationToken)
+    {
+        var sellerOrder =
+            await orderRepository.GetSellerOrderByIdAndUserIdAsync(
+                id,
+                userId,
+                cancellationToken);
+
+        if (sellerOrder is null)
+        {
+            return Result<GetSellerOrderDetailsDto>.Failure(new Error(
+                "SellerOrder.NotFound",
+                ErrorType.NotFound,
+                "Seller order with this id was not found."));
+        }
+
+        var dto = mapper.Map<GetSellerOrderDetailsDto>(
+            sellerOrder);
+
+        return Result<GetSellerOrderDetailsDto>.Success(dto);
     }
 }

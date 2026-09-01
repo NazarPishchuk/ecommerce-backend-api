@@ -66,4 +66,36 @@ public class OrderRepository(
 
         return affectedRows > 0;
     }
+
+    public async Task<IReadOnlyList<SellerOrder>> GetSellerOrdersByUserIdAsync(
+        string userId,
+        CancellationToken cancellationToken)
+    {
+        return await dbContext.SellerOrders
+            .AsNoTracking()
+            .Include(x => x.Order)
+            .Include(x => x.OrderItems)
+            .Where(x =>
+                x.SellerProfile != null &&
+                x.SellerProfile.UserId == userId)
+            .OrderByDescending(x => x.Order.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<SellerOrder?> GetSellerOrderByIdAndUserIdAsync(
+        int id,
+        string userId,
+        CancellationToken cancellationToken)
+    {
+        return await dbContext.SellerOrders
+            .AsNoTracking()
+            .Include(x => x.Order)
+            .Include(x => x.OrderItems)
+            .FirstOrDefaultAsync(
+                x =>
+                    x.Id == id &&
+                    x.SellerProfile != null &&
+                    x.SellerProfile.UserId == userId,
+                cancellationToken);
+    }
 }

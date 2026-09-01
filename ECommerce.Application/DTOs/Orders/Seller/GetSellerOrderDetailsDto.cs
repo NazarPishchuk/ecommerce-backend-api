@@ -1,13 +1,13 @@
 ﻿using ECommerce.Domain.Enums;
 
-namespace ECommerce.Application.DTOs.Orders;
+namespace ECommerce.Application.DTOs.Orders.Seller;
 
-public class GetSellerOrderDto
+public class GetSellerOrderDetailsDto
 {
     public int Id { get; set; }
-    public int? SellerProfileId { get; set; }
-    public string StoreName { get; set; } = null!;
     public SellerOrderStatus Status { get; set; }
+    public decimal TotalAmount { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     public IReadOnlyList<GetOrderItemDto> OrderItems { get; set; }
         = new List<GetOrderItemDto>();

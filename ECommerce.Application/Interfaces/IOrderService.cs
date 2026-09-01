@@ -1,11 +1,21 @@
 ﻿using ECommerce.Application.Results;
-using ECommerce.Application.DTOs.Orders;
+using ECommerce.Application.DTOs.Orders.Customer;
+using ECommerce.Application.DTOs.Orders.Seller;
 
 namespace ECommerce.Application.Interfaces;
 
 public interface IOrderService
 {
     Task<Result> CheckoutAsync(
+        string userId,
+        CancellationToken cancellationToken);
+
+    Task<Result<IReadOnlyList<GetSellerOrderListDto>>> GetMineSellerOrdersAsync(
+        string userId,
+        CancellationToken cancellationToken);
+
+    Task<Result<GetSellerOrderDetailsDto>> GetMineSellerOrderByIdAsync(
+        int id,
         string userId,
         CancellationToken cancellationToken);
 
