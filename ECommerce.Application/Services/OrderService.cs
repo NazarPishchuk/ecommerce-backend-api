@@ -4,7 +4,6 @@ using ECommerce.Application.Interfaces;
 using ECommerce.Application.Results;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Enums;
-using System.Transactions;
 
 namespace ECommerce.Application.Services;
 
@@ -181,4 +180,26 @@ public class OrderService(
         return Result<IReadOnlyList<GetOrderListDto>>.Success(dto);
     }
 
+    public async Task<Result<GetOrderDto>> GetMineByIdAsync(
+        int id,
+        string userId,
+        CancellationToken cancellationToken)
+    {
+        var order = await orderRepository.GetByIdAndUserIdAsync(
+            id,
+            userId,
+            cancellationToken);
+
+        if (order is null)
+        {
+            return Result<GetOrderDto>.Failure(new Error(
+                "Order.NotFound",
+                ErrorType.NotFound,
+                "Order with this id was not found."));
+        }
+
+        var dto = mapper.Map<GetOrderDto>(order);
+
+        return Result<GetOrderDto>.Success(dto);
+    }
 }

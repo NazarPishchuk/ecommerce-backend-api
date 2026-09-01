@@ -12,6 +12,17 @@ public class OrderRepository(
         dbContext.Orders.Add(order);
     }
 
+    public Task<Order?> GetByIdAndUserIdAsync(int id, string userId, CancellationToken cancellationToken)
+    {
+        return dbContext.Orders
+            .AsNoTracking()
+            .Include(x => x.SellerOrders)
+                .ThenInclude(x => x.OrderItems)
+            .FirstOrDefaultAsync(
+            x => x.Id == id && x.UserId == userId,
+            cancellationToken);
+    }
+
     public async Task<IReadOnlyList<Order>> GetByUserIdAsync(
         string userId,
         CancellationToken cancellationToken)
