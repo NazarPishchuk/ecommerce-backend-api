@@ -1,4 +1,5 @@
-﻿using ECommerce.Domain.Enums;
+﻿using ECommerce.Application.DTOs.Orders.Customer;
+using ECommerce.Domain.Enums;
 
 namespace ECommerce.Application.DTOs.Orders.Seller;
 

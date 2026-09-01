@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using ECommerce.Application.DTOs.Orders;
+using ECommerce.Application.DTOs.Orders.Admin;
 using ECommerce.Application.DTOs.Orders.Customer;
 using ECommerce.Application.DTOs.Orders.Seller;
 using ECommerce.Domain.Entities;
@@ -35,5 +35,7 @@ public class OrderMappingProfile : Profile
             .ForMember(
                 dest => dest.CreatedAt,
                 opt => opt.MapFrom(src => src.Order.CreatedAt));
+
+        CreateMap<Order, GetAdminOrderListDto>();
     }
 }

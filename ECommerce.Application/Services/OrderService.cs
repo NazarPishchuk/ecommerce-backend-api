@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ECommerce.Application.DTOs.Orders.Admin;
 using ECommerce.Application.DTOs.Orders.Customer;
 using ECommerce.Application.DTOs.Orders.Seller;
 using ECommerce.Application.Interfaces;
@@ -414,5 +415,17 @@ public class OrderService(
             cancellationToken);
 
         return Result.Success();
+    }
+
+    public async Task<Result<IReadOnlyList<GetAdminOrderListDto>>> GetAllForAdminAsync(
+    CancellationToken cancellationToken)
+    {
+        var orders = await orderRepository.GetAllAsync(
+            cancellationToken);
+
+        var dto = mapper.Map<IReadOnlyList<GetAdminOrderListDto>>(
+            orders);
+
+        return Result<IReadOnlyList<GetAdminOrderListDto>>.Success(dto);
     }
 }
