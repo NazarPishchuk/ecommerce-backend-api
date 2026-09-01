@@ -176,5 +176,18 @@ public class OrderRepository(
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<Order?> GetByIdAsync(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        return await dbContext.Orders
+            .AsNoTracking()
+            .Include(x => x.SellerOrders)
+                .ThenInclude(x => x.OrderItems)
+            .FirstOrDefaultAsync(
+                x => x.Id == id,
+                cancellationToken);
+    }
 }
 

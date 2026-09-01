@@ -26,4 +26,21 @@ public class AdminOrdersController(
 
         return Ok(result.Value);
     }
+
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<GetAdminOrderDto>> GetByIdAsync(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        var result = await orderService.GetByIdForAdminAsync(
+            id,
+            cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return MapError(result.Error!);
+        }
+
+        return Ok(result.Value);
+    }
 }

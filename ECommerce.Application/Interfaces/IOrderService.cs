@@ -46,4 +46,8 @@ public interface IOrderService
 
     Task<Result<IReadOnlyList<GetAdminOrderListDto>>> GetAllForAdminAsync(
         CancellationToken cancellationToken);
+
+    Task<Result<GetAdminOrderDto>> GetByIdForAdminAsync(
+        int id,
+        CancellationToken cancellationToken);
 }
