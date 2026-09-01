@@ -53,4 +53,22 @@ public class OrdersController(
 
         return Ok(result.Value);
     }
+
+    [HttpPatch("{id:int}/cancel")]
+    public async Task<IActionResult> CancelAsync(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        var result = await orderService.CancelAsync(
+            id,
+            CurrentUserId,
+            cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return MapError(result.Error!);
+        }
+
+        return NoContent();
+    }
 }
