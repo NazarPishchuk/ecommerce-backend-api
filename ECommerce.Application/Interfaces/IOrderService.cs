@@ -12,4 +12,10 @@ public interface IOrderService
     Task<Result<IReadOnlyList<GetOrderListDto>>> GetMineAsync(
         string userId,
         CancellationToken cancellationToken);
+
+    Task<Result<GetOrderDto>> GetMineByIdAsync(
+        int id,
+        string userId,
+        CancellationToken cancellationToken);
+    
 }

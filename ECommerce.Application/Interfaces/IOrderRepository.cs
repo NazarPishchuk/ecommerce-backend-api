@@ -9,4 +9,9 @@ public interface IOrderRepository
     Task<IReadOnlyList<Order>> GetByUserIdAsync(
         string userId,
         CancellationToken cancellationToken);
+
+    Task<Order?> GetByIdAndUserIdAsync(
+        int id,
+        string userId,
+        CancellationToken cancellationToken);
 }

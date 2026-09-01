@@ -9,5 +9,11 @@ public class OrderMappingProfile : Profile
     public OrderMappingProfile()
     {
         CreateMap<Order, GetOrderListDto>();
+
+        CreateMap<Order, GetOrderDto>();
+
+        CreateMap<SellerOrder, GetSellerOrderDto>();
+
+        CreateMap<OrderItem, GetOrderItemDto>();
     }
 }

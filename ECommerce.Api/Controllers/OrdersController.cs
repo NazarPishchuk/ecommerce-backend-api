@@ -35,4 +35,22 @@ public class OrdersController(
 
         return Ok(result.Value);
     }
+
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<GetOrderDto>> GetMineByIdAsync(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        var result = await orderService.GetMineByIdAsync(
+            id,
+            CurrentUserId,
+            cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return MapError(result.Error!);
+        }
+
+        return Ok(result.Value);
+    }
 }
