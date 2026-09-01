@@ -62,4 +62,22 @@ public class SellerOrdersController(
 
         return NoContent();
     }
+
+    [HttpPatch("{id:int}/reject")]
+    public async Task<IActionResult> RejectAsync(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        var result = await orderService.RejectSellerOrderAsync(
+            id,
+            CurrentUserId,
+            cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return MapError(result.Error!);
+        }
+
+        return NoContent();
+    }
 }

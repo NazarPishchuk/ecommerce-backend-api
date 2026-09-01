@@ -6,5 +6,6 @@ public enum SellerOrderStatus
     Confirmed,
     Rejected,
     Shipped,
+    Delivered,
     Cancelled
 }
