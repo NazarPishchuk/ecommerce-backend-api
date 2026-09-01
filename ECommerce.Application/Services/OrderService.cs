@@ -418,7 +418,7 @@ public class OrderService(
     }
 
     public async Task<Result<IReadOnlyList<GetAdminOrderListDto>>> GetAllForAdminAsync(
-    CancellationToken cancellationToken)
+        CancellationToken cancellationToken)
     {
         var orders = await orderRepository.GetAllAsync(
             cancellationToken);
@@ -427,5 +427,26 @@ public class OrderService(
             orders);
 
         return Result<IReadOnlyList<GetAdminOrderListDto>>.Success(dto);
+    }
+
+    public async Task<Result<GetAdminOrderDto>> GetByIdForAdminAsync(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        var order = await orderRepository.GetByIdAsync(
+            id,
+            cancellationToken);
+
+        if (order is null)
+        {
+            return Result<GetAdminOrderDto>.Failure(new Error(
+                "Order.NotFound",
+                ErrorType.NotFound,
+                "Order with this id was not found."));
+        }
+
+        var dto = mapper.Map<GetAdminOrderDto>(order);
+
+        return Result<GetAdminOrderDto>.Success(dto);
     }
 }

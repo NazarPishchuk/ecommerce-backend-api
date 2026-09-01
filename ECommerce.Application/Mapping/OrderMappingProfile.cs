@@ -37,5 +37,7 @@ public class OrderMappingProfile : Profile
                 opt => opt.MapFrom(src => src.Order.CreatedAt));
 
         CreateMap<Order, GetAdminOrderListDto>();
+
+        CreateMap<Order, GetAdminOrderDto>();
     }
 }

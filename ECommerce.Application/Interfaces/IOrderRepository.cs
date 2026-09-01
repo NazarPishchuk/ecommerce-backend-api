@@ -50,4 +50,8 @@ public interface IOrderRepository
 
     Task<IReadOnlyList<Order>> GetAllAsync(
         CancellationToken cancellationToken);
+
+    Task<Order?> GetByIdAsync(
+        int id,
+        CancellationToken cancellationToken);
 }
