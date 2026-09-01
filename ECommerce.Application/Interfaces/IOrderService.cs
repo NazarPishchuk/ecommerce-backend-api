@@ -37,4 +37,9 @@ public interface IOrderService
         int id,
         string userId,
         CancellationToken cancellationToken);
+
+    Task<Result> RejectSellerOrderAsync(
+        int id,
+        string userId,
+        CancellationToken cancellationToken);
 }

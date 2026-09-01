@@ -20,7 +20,7 @@ public interface IOrderRepository
         string userId,
         CancellationToken cancellationToken);
 
-    Task<bool> TryCancelPendingSellerOrdersAsync(
+    Task<bool> TryCancelSellerOrdersAsync(
         int orderId,
         string userId,
         CancellationToken cancellationToken);
@@ -39,7 +39,12 @@ public interface IOrderRepository
         string userId,
         CancellationToken cancellationToken);
 
-    Task MarkOrderAsProcessingAsync(
+    Task<bool> TryRejectSellerOrderAsync(
+        int id,
+        string userId,
+        CancellationToken cancellationToken);
+
+    Task RecalculateOrderStatusAsync(
         int orderId,
         CancellationToken cancellationToken);
 }

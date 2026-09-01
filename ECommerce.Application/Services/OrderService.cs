@@ -226,7 +226,7 @@ public class OrderService(
             cancellationToken);
 
         var cancelled =
-            await orderRepository.TryCancelPendingSellerOrdersAsync(
+            await orderRepository.TryCancelSellerOrdersAsync(
                 id,
                 userId,
                 cancellationToken);
@@ -318,6 +318,14 @@ public class OrderService(
                 "Seller order with this id was not found."));
         }
 
+        if (sellerOrder.Status != SellerOrderStatus.Pending)
+        {
+            return Result.Failure(new Error(
+                "SellerOrder.Conflict",
+                ErrorType.Conflict,
+                "Seller order is no longer pending."));
+        }
+
         await using var transaction =
             await unitOfWork.BeginTransactionAsync(
                 cancellationToken);
@@ -336,7 +344,69 @@ public class OrderService(
                 "Seller order is no longer pending."));
         }
 
-        await orderRepository.MarkOrderAsProcessingAsync(
+        await orderRepository.RecalculateOrderStatusAsync(
+            sellerOrder.OrderId,
+            cancellationToken);
+
+        await transaction.CommitAsync(
+            cancellationToken);
+
+        return Result.Success();
+    }
+
+    public async Task<Result> RejectSellerOrderAsync(
+        int id,
+        string userId,
+        CancellationToken cancellationToken)
+    {
+        var sellerOrder =
+            await orderRepository.GetSellerOrderByIdAndUserIdAsync(
+                id,
+                userId,
+                cancellationToken);
+
+        if (sellerOrder is null)
+        {
+            return Result.Failure(new Error(
+                "SellerOrder.NotFound",
+                ErrorType.NotFound,
+                "Seller order with this id was not found."));
+        }
+
+        if (sellerOrder.Status != SellerOrderStatus.Pending)
+        {
+            return Result.Failure(new Error(
+                "SellerOrder.Conflict",
+                ErrorType.Conflict,
+                "Seller order is no longer pending."));
+        }
+
+        await using var transaction =
+            await unitOfWork.BeginTransactionAsync(
+                cancellationToken);
+
+        var rejected = await orderRepository.TryRejectSellerOrderAsync(
+            id, 
+            userId, 
+            cancellationToken);
+
+        if (!rejected)
+        {
+            return Result.Failure(new Error(
+                "SellerOrder.Conflict",
+                ErrorType.Conflict,
+                "Seller order is no longer pending."));
+        }
+
+        foreach(var orderItem in sellerOrder.OrderItems)
+        {
+            await productRepository.IncreaseStockAsync(
+                orderItem.ProductId,
+                orderItem.Quantity,
+                cancellationToken);
+        }
+
+        await orderRepository.RecalculateOrderStatusAsync(
             sellerOrder.OrderId,
             cancellationToken);
 

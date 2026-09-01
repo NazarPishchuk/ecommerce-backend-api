@@ -45,7 +45,7 @@ public class OrderRepository(
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<bool> TryCancelPendingSellerOrdersAsync(
+    public async Task<bool> TryCancelSellerOrdersAsync(
         int orderId,
         string userId,
         CancellationToken cancellationToken)
@@ -117,19 +117,55 @@ public class OrderRepository(
         return affectedRows == 1;
     }
 
-    public async Task MarkOrderAsProcessingAsync(
-        int orderId,
-        CancellationToken cancellationToken)
+    public async Task RecalculateOrderStatusAsync(
+    int orderId,
+    CancellationToken cancellationToken)
     {
         await dbContext.Orders
+            .Where(order =>
+                order.Id == orderId &&
+                order.Status != OrderStatus.Cancelled)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(
+                    order => order.Status,
+                    order =>
+                        !dbContext.SellerOrders.Any(sellerOrder =>
+                            sellerOrder.OrderId == orderId &&
+                            sellerOrder.Status != SellerOrderStatus.Pending)
+                                ? OrderStatus.Pending
+
+                        : !dbContext.SellerOrders.Any(sellerOrder =>
+                            sellerOrder.OrderId == orderId &&
+                            sellerOrder.Status != SellerOrderStatus.Rejected)
+                                ? OrderStatus.Rejected
+
+                        : !dbContext.SellerOrders.Any(sellerOrder =>
+                            sellerOrder.OrderId == orderId &&
+                            sellerOrder.Status != SellerOrderStatus.Delivered &&
+                            sellerOrder.Status != SellerOrderStatus.Rejected)
+                                ? OrderStatus.Completed
+
+                        : OrderStatus.Processing),
+                cancellationToken);
+    }
+
+    public async Task<bool> TryRejectSellerOrderAsync(
+        int id,
+        string userId,
+        CancellationToken cancellationToken)
+    {
+        var affectedRows = await dbContext.SellerOrders
             .Where(x =>
-                x.Id == orderId &&
-                x.Status == OrderStatus.Pending)
+                x.Id == id &&
+                x.SellerProfile!.UserId == userId &&
+                x.Status == SellerOrderStatus.Pending)
             .ExecuteUpdateAsync(
                 setters => setters.SetProperty(
                     x => x.Status,
-                    OrderStatus.Processing),
+                    SellerOrderStatus.Rejected),
                 cancellationToken);
+
+        return affectedRows == 1;
     }
 }
 
