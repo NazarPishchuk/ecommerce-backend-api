@@ -12,4 +12,5 @@
   <Project Path="ECommerce.Domain/ECommerce.Domain.csproj" Id="02ecb849-92d5-47ed-ba2e-d983d116c2e9" />
   <Project Path="ECommerce.Infrastructure/ECommerce.Infrastructure.csproj" Id="656d5bca-e94d-42d7-9de0-e3286ea19e61" />
   <Project Path="ECommerce.NotificationService/ECommerce.NotificationService.csproj" Id="3625994a-0ece-47ca-ade7-a23a5d4a7641" />
+  <Project Path="ECommerce.PaymentService/ECommerce.PaymentService.csproj" Id="704b078a-8d81-4b27-8186-0762264f6a08" />
 </Solution>
