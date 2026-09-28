@@ -1,4 +1,21 @@
 services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: ecommerce-sqlserver
+
+    ports:
+      - "1433:1433"
+
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+      MSSQL_SA_PASSWORD: ${SQLSERVER_SA_PASSWORD:?SQLSERVER_SA_PASSWORD is required}
+
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+
+    restart: unless-stopped
+
   rabbitmq:
     image: rabbitmq:4-management
     container_name: ecommerce-rabbitmq
@@ -35,5 +52,6 @@ services:
     restart: unless-stopped
 
 volumes:
+  sqlserver_data:
   rabbitmq_data:
   seq_data:
