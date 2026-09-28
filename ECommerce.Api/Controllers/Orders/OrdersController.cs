@@ -7,11 +7,11 @@ using ECommerce.Application.DTOs.Orders.Customer;
 namespace ECommerce.Api.Controllers.Orders;
 
 [Route("api/orders")]
+[Authorize]
 [ApiController]
 public class OrdersController(
     IOrderService orderService) : ApiControllerBase
 {
-    [Authorize]
     [HttpPost]
     public async Task<IActionResult> CreateOrderAsync(
         CancellationToken cancellationToken)
