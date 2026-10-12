@@ -1,5 +1,6 @@
 using ECommerce.PaymentService.Persistence;
 using ECommerce.PaymentService.Providers;
+using ECommerce.PaymentService.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +12,8 @@ builder.Services.AddDbContext<PaymentDbContext>(options =>
         builder.Configuration.GetConnectionString("PaymentDbConnectionString")));
 
 builder.Services.AddScoped<IPaymentProvider, FakePaymentProvider>();
+
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 builder.Services.AddOpenApi();
 
