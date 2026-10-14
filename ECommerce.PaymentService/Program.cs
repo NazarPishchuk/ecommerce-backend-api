@@ -15,6 +15,17 @@ builder.Services.AddScoped<IPaymentProvider, FakePaymentProvider>();
 
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 
+builder.Services.AddHttpClient<
+    IPaymentProvider,
+    FakePaymentProvider>(client =>
+    {
+        var baseUrl = builder.Configuration["FakePaymentProvider:BaseUrl"]
+            ?? throw new InvalidOperationException(
+                "FakePaymentProvider BaseUrl is not configured.");
+
+        client.BaseAddress = new Uri(baseUrl);
+    });
+
 builder.Services.AddOpenApi();
 
 var app = builder.Build();

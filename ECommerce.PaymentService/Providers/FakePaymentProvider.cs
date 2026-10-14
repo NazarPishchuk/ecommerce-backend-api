@@ -1,19 +1,37 @@
 ﻿namespace ECommerce.PaymentService.Providers;
 
-public class FakePaymentProvider : IPaymentProvider
+public class FakePaymentProvider(
+    HttpClient httpClient) : IPaymentProvider
 {
-    public Task<PaymentProviderResult> CreatePaymentAsync(
+    public async Task<PaymentProviderResult> CreatePaymentAsync(
         Guid paymentId,
         decimal amount,
         string currency,
         CancellationToken cancellationToken = default)
     {
-        var providerPaymentId = Guid.NewGuid().ToString();
+        var request = new
+        {
+            PaymentId = paymentId,
+            Amount = amount,
+            Currency = currency
+        };
 
-        var result = new PaymentProviderResult(
-            providerPaymentId,
-            $"https://fake-payment.local/pay/{providerPaymentId}");
+        using var response = await httpClient.PostAsJsonAsync(
+            "api/payments",
+            request,
+            cancellationToken);
 
-        return Task.FromResult(result);
+        response.EnsureSuccessStatusCode();
+
+        var result = await response.Content
+            .ReadFromJsonAsync<PaymentProviderResult>(
+                cancellationToken);
+
+        if (result is null)
+            throw new InvalidOperationException(
+                "Payment provider returned an empty response.");
+
+        return result;
     }
 }
+

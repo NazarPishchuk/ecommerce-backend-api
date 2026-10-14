@@ -27,6 +27,9 @@ public class PaymentService(
             CreatedAt = DateTime.UtcNow
         };
 
+        dbContext.Payments.Add(payment);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
         var providerResult = await paymentProvider.CreatePaymentAsync(
             payment.Id,
             payment.Amount,
@@ -35,7 +38,6 @@ public class PaymentService(
 
         payment.ProviderPaymentId = providerResult.ProviderPaymentId;
 
-        dbContext.Payments.Add(payment);
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return new CreatePaymentResultDto(
