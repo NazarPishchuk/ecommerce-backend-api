@@ -148,14 +148,15 @@ builder.Services
     .AddDefaultTokenProviders();
 
 
-builder.Services
-    .AddHttpClient<OrderPaymentService>(client =>
-{
-    client.BaseAddress = new Uri(
-        builder.Configuration["PaymentService:BaseUrl"]
-        ?? throw new InvalidOperationException(
-            "PaymentService BaseUrl is not configured."));
-});
+builder.Services.AddHttpClient<
+    IOrderPaymentService,
+    OrderPaymentService>(client =>
+    {
+        client.BaseAddress = new Uri(
+            builder.Configuration["PaymentService:BaseUrl"]
+            ?? throw new InvalidOperationException(
+                "PaymentService BaseUrl is not configured."));
+    });
 
 builder.Services
     .AddAuthentication(options =>
