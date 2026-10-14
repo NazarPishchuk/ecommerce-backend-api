@@ -2,10 +2,16 @@ using ECommerce.PaymentService.Persistence;
 using ECommerce.PaymentService.Providers;
 using ECommerce.PaymentService.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter());
+    });
 
 builder.Services.AddDbContext<PaymentDbContext>(options =>
     options.UseSqlServer(
