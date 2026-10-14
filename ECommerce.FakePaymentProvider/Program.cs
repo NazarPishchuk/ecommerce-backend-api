@@ -12,6 +12,10 @@ builder.Services.AddSingleton<IPaymentSessionStore, PaymentSessionStore>();
 
 builder.Services.AddScoped<IPaymentSessionService, PaymentSessionService>();
 
+builder.Services.AddHttpClient<
+    IPaymentWebhookSender,
+    PaymentWebhookSender>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
