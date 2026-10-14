@@ -1,7 +1,8 @@
-﻿using ECommerce.Application.Interfaces;
+﻿using ECommerce.Api.Services;
+using ECommerce.Application.DTOs.Orders.Customer;
+using ECommerce.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ECommerce.Application.DTOs.Orders.Customer;
 
 
 namespace ECommerce.Api.Controllers.Orders;
@@ -10,7 +11,8 @@ namespace ECommerce.Api.Controllers.Orders;
 [Authorize]
 [ApiController]
 public class OrdersController(
-    IOrderService orderService) : ApiControllerBase
+    IOrderService orderService,
+    IOrderPaymentService orderPaymentService) : ApiControllerBase
 {
     [HttpPost]
     public async Task<IActionResult> CreateOrderAsync(
@@ -73,5 +75,21 @@ public class OrdersController(
         }
 
         return NoContent();
+    }
+
+    [HttpPost("{id:int}/pay")]
+    public async Task<IActionResult> Pay(
+    int id,
+    CancellationToken cancellationToken)
+    {
+        var result = await orderPaymentService.CreatePaymentAsync(
+            id,
+            CurrentUserId,
+            cancellationToken);
+
+        if (result is null)
+            return NotFound("Order not found.");
+
+        return Ok(result);
     }
 }
