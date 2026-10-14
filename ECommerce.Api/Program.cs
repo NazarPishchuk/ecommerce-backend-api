@@ -1,3 +1,4 @@
+using ECommerce.Api.Services;
 using ECommerce.Application.Authentication;
 using ECommerce.Application.Interfaces;
 using ECommerce.Application.Mapping;
@@ -146,6 +147,15 @@ builder.Services
     .AddEntityFrameworkStores<ECommerceDbContext>()
     .AddDefaultTokenProviders();
 
+
+builder.Services
+    .AddHttpClient<OrderPaymentService>(client =>
+{
+    client.BaseAddress = new Uri(
+        builder.Configuration["PaymentService:BaseUrl"]
+        ?? throw new InvalidOperationException(
+            "PaymentService BaseUrl is not configured."));
+});
 
 builder.Services
     .AddAuthentication(options =>
