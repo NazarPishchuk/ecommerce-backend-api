@@ -3,6 +3,7 @@ using ECommerce.PaymentService.Providers;
 using ECommerce.PaymentService.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
+using ECommerce.PaymentService.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,17 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(
             new JsonStringEnumConverter());
     });
+
+builder.Services.AddScoped<PaymentWebhookService>();
+
+builder.Services
+    .AddOptions<FakePaymentProviderOptions>()
+    .Bind(builder.Configuration.GetSection(
+        FakePaymentProviderOptions.SectionName))
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.WebhookSecret),
+        "Fake payment provider webhook secret is required.")
+    .ValidateOnStart();
 
 builder.Services.AddDbContext<PaymentDbContext>(options =>
     options.UseSqlServer(
