@@ -8,6 +8,8 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+builder.Services.AddRazorPages();
+
 builder.Services.AddSingleton<IPaymentSessionStore, PaymentSessionStore>();
 
 builder.Services.AddScoped<IPaymentSessionService, PaymentSessionService>();
@@ -29,5 +31,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapRazorPages();
 
 app.Run();
