@@ -63,6 +63,38 @@ namespace ECommerce.PaymentService.Persistence.Migrations
 
                     b.ToTable("Payments");
                 });
+
+            modelBuilder.Entity("ECommerce.PaymentService.Persistence.Outbox.OutboxMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("OccurredAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("ProcessedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("RoutingKey")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProcessedAtUtc", "OccurredAtUtc");
+
+                    b.ToTable("OutboxMessages", (string)null);
+                });
 #pragma warning restore 612, 618
         }
     }
