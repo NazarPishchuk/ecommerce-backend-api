@@ -14,6 +14,10 @@ public class Order
 
     public DateTimeOffset CreatedAt { get; set; }
 
+    public Guid? PaymentId { get; set; }
+
+    public DateTimeOffset? PaidAtUtc { get; set; }
+
     public ICollection<SellerOrder> SellerOrders { get; set; }
         = new List<SellerOrder>();
 }
