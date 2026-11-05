@@ -87,8 +87,8 @@ public class OrdersController(
             CurrentUserId,
             cancellationToken);
 
-        if (result is null)
-            return NotFound("Order not found.");
+        if (result.IsFailure)
+            return MapError(result.Error!);
 
         return Ok(result);
     }

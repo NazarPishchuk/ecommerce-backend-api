@@ -4,7 +4,7 @@ namespace ECommerce.Application.Interfaces;
 
 public interface IOrderPaymentService
 {
-    Task<CreateOrderPaymentResult?> CreatePaymentAsync(
+    Task<Result<CreateOrderPaymentResult>> CreatePaymentAsync(
         int orderId,
         string userId,
         CancellationToken cancellationToken);
