@@ -1,9 +1,11 @@
+using ECommerce.PaymentService.Configuration;
+using ECommerce.PaymentService.Messaging;
 using ECommerce.PaymentService.Persistence;
+using ECommerce.PaymentService.Persistence.Outbox;
 using ECommerce.PaymentService.Providers;
 using ECommerce.PaymentService.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
-using ECommerce.PaymentService.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +17,8 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddScoped<PaymentWebhookService>();
+
+builder.Services.AddHostedService<OutboxProcessor>();
 
 builder.Services
     .AddOptions<FakePaymentProviderOptions>()
@@ -45,6 +49,31 @@ builder.Services.AddHttpClient<
     });
 
 builder.Services.AddOpenApi();
+
+builder.Services
+    .AddOptions<RabbitMqOptions>()
+    .Bind(builder.Configuration.GetSection(
+        RabbitMqOptions.SectionName))
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.HostName),
+        "RabbitMQ host name is required.")
+    .Validate(
+        options => options.Port is > 0 and <= 65535,
+        "RabbitMQ port is invalid.")
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.UserName),
+        "RabbitMQ user name is required.")
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.Password),
+        "RabbitMQ password is required.")
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.ExchangeName),
+        "RabbitMQ exchange name is required.")
+    .ValidateOnStart();
+
+builder.Services.AddSingleton<RabbitMqPublisher>();
+
+builder.Services.AddHostedService<OutboxProcessor>();
 
 var app = builder.Build();
 
