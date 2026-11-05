@@ -18,6 +18,7 @@ using Serilog;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json.Serialization;
+using ECommerce.Infrastructure.Messaging.Payments;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -260,6 +261,11 @@ if (builder.Environment.IsDevelopment())
 
     builder.Services.AddScoped<DevelopmentAdminSeeder>();
 }
+
+builder.Services.AddScoped<PaymentEventHandler>();
+
+builder.Services.AddScoped<PaymentEventHandler>();
+builder.Services.AddHostedService<PaymentEventsConsumer>();
 
 var app = builder.Build();
 
