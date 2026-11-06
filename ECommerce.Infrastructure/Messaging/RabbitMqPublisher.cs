@@ -41,7 +41,10 @@ public sealed class RabbitMqPublisher(IOptions<RabbitMqOptions> options)
         }
     }
 
-    public async Task PublishAsync(string routingKey, string payload, CancellationToken cancellationToken)
+    public async Task PublishAsync(Guid messageId, 
+        string routingKey, 
+        string payload, 
+        CancellationToken cancellationToken)
     {
         await EnsureConnectedAsync(cancellationToken);
 
@@ -56,6 +59,7 @@ public sealed class RabbitMqPublisher(IOptions<RabbitMqOptions> options)
 
         var properties = new BasicProperties
         {
+            MessageId = messageId.ToString(),
             ContentType = "application/json",
             DeliveryMode = DeliveryModes.Persistent
         };

@@ -1,7 +1,19 @@
 using ECommerce.NotificationService.Email;
 using ECommerce.NotificationService.Messaging;
+using ECommerce.NotificationService.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 var builder = Host.CreateApplicationBuilder(args);
+
+builder.Services.AddDbContext<NotificationDbContext>(options =>
+{
+    var connectionString = builder.Configuration.GetConnectionString(
+        "NotificationDbConnectionString")
+        ?? throw new InvalidOperationException(
+            "Notification database connection string is not configured.");
+
+    options.UseSqlServer(connectionString);
+});
 
 builder.Services
     .AddOptions<RabbitMqOptions>()

@@ -1,19 +1,21 @@
-﻿using ECommerce.Contracts.Messaging;
+﻿using System.Text.Json;
+using ECommerce.Contracts.Messaging;
 using ECommerce.NotificationService.Email;
+using ECommerce.NotificationService.Persistence;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using System.Text.Json;
 
 namespace ECommerce.NotificationService.Messaging;
 
 internal sealed class EmailConfirmationRequestedConsumer(
     IOptions<RabbitMqOptions> options,
     ILogger<EmailConfirmationRequestedConsumer> logger,
-    IEmailSender emailSender)
+    IEmailSender emailSender,
+    IServiceScopeFactory scopeFactory)
     : BackgroundService
 {
-
     private readonly RabbitMqOptions _options = options.Value;
 
     protected override async Task ExecuteAsync(
@@ -27,16 +29,21 @@ internal sealed class EmailConfirmationRequestedConsumer(
             Password = _options.Password,
             ClientProvidedName =
                 "notification-service-email-consumer",
-            AutomaticRecoveryEnabled = true
+
+            AutomaticRecoveryEnabled = true,
+
+            // Process callbacks sequentially in this service instance.
+            ConsumerDispatchConcurrency = 1
         };
 
         await using var connection =
-            await connectionFactory.CreateConnectionAsync(stoppingToken);
+            await connectionFactory.CreateConnectionAsync(
+                stoppingToken);
 
         await using var channel =
-            await connection.CreateChannelAsync(cancellationToken: stoppingToken);
+            await connection.CreateChannelAsync(
+                cancellationToken: stoppingToken);
 
-        // Normal exchange
         await channel.ExchangeDeclareAsync(
             exchange: _options.ExchangeName,
             type: ExchangeType.Direct,
@@ -44,7 +51,6 @@ internal sealed class EmailConfirmationRequestedConsumer(
             autoDelete: false,
             cancellationToken: stoppingToken);
 
-        // Exchange for failed messages
         await channel.ExchangeDeclareAsync(
             exchange: _options.DeadLetterExchangeName,
             type: ExchangeType.Direct,
@@ -52,7 +58,6 @@ internal sealed class EmailConfirmationRequestedConsumer(
             autoDelete: false,
             cancellationToken: stoppingToken);
 
-        // Queue where failed messages will stay
         await channel.QueueDeclareAsync(
             queue: _options.DeadLetterQueueName,
             durable: true,
@@ -61,7 +66,6 @@ internal sealed class EmailConfirmationRequestedConsumer(
             arguments: null,
             cancellationToken: stoppingToken);
 
-        // Connect DLQ to dead-letter exchange
         await channel.QueueBindAsync(
             queue: _options.DeadLetterQueueName,
             exchange: _options.DeadLetterExchangeName,
@@ -77,7 +81,6 @@ internal sealed class EmailConfirmationRequestedConsumer(
                 MessageRoutingKeys.DeadLetterRoutingKey
         };
 
-        // Main queue
         await channel.QueueDeclareAsync(
             queue: _options.QueueName,
             durable: true,
@@ -86,7 +89,6 @@ internal sealed class EmailConfirmationRequestedConsumer(
             arguments: queueArguments,
             cancellationToken: stoppingToken);
 
-        // Normal exchange -> main queue
         await channel.QueueBindAsync(
             queue: _options.QueueName,
             exchange: _options.ExchangeName,
@@ -94,29 +96,87 @@ internal sealed class EmailConfirmationRequestedConsumer(
                 MessageRoutingKeys.EmailConfirmationRequested,
             cancellationToken: stoppingToken);
 
-        var consumer =
-            new AsyncEventingBasicConsumer(channel);
+        // Receive one unacknowledged message at a time.
+        await channel.BasicQosAsync(
+            prefetchSize: 0,
+            prefetchCount: 1,
+            global: false,
+            cancellationToken: stoppingToken);
 
-        consumer.ReceivedAsync += async (_, eventArgs) =>
+        var consumer = new AsyncEventingBasicConsumer(channel);
+
+        consumer.ReceivedAsync += async (_, delivery) =>
         {
             try
             {
-                var body = eventArgs.Body.ToArray();
-
-                var message =
-                    JsonSerializer
-                        .Deserialize<EmailConfirmationRequested>(
-                            body);
-
-                if (message is null)
+                if (!Guid.TryParse(
+                        delivery.BasicProperties.MessageId,
+                        out var messageId) ||
+                    messageId == Guid.Empty)
                 {
-                    throw new InvalidOperationException(
-                        "RabbitMQ message could not be deserialized.");
+                    logger.LogWarning(
+                        "Notification rejected: missing or invalid MessageId.");
+
+                    await channel.BasicNackAsync(
+                        deliveryTag: delivery.DeliveryTag,
+                        multiple: false,
+                        requeue: false,
+                        cancellationToken: stoppingToken);
+
+                    return;
                 }
 
-                logger.LogInformation(
-                    "Email confirmation requested for {Email}",
-                    message.Email);
+                await using var scope =
+                    scopeFactory.CreateAsyncScope();
+
+                var dbContext = scope.ServiceProvider
+                    .GetRequiredService<NotificationDbContext>();
+
+                var alreadyProcessed =
+                    await dbContext.ProcessedNotifications
+                        .AnyAsync(
+                            notification =>
+                                notification.MessageId == messageId,
+                            stoppingToken);
+
+                if (alreadyProcessed)
+                {
+                    logger.LogInformation(
+                        "Notification {MessageId} was already processed. " +
+                        "Skipping email delivery.",
+                        messageId);
+
+                    await channel.BasicAckAsync(
+                        deliveryTag: delivery.DeliveryTag,
+                        multiple: false,
+                        cancellationToken: stoppingToken);
+
+                    return;
+                }
+
+                var body = delivery.Body.ToArray();
+
+                var message =
+                    JsonSerializer.Deserialize<EmailConfirmationRequested>(
+                        body);
+
+                if (message is null ||
+                    string.IsNullOrWhiteSpace(message.UserId) ||
+                    string.IsNullOrWhiteSpace(message.Email) ||
+                    string.IsNullOrWhiteSpace(message.ConfirmationToken))
+                {
+                    logger.LogWarning(
+                        "Notification {MessageId} has an invalid payload.",
+                        messageId);
+
+                    await channel.BasicNackAsync(
+                        deliveryTag: delivery.DeliveryTag,
+                        multiple: false,
+                        requeue: false,
+                        cancellationToken: stoppingToken);
+
+                    return;
+                }
 
                 await emailSender.SendConfirmationEmailAsync(
                     message.Email,
@@ -124,24 +184,42 @@ internal sealed class EmailConfirmationRequestedConsumer(
                     message.ConfirmationToken,
                     stoppingToken);
 
+                dbContext.ProcessedNotifications.Add(
+                    new ProcessedNotification
+                    {
+                        MessageId = messageId,
+                        ProcessedAtUtc = DateTimeOffset.UtcNow
+                    });
+
+                await dbContext.SaveChangesAsync(stoppingToken);
+
                 logger.LogInformation(
-                    "Confirmation email sent to {Email}",
-                    message.Email);
+                    "Notification {MessageId} was sent and recorded.",
+                    messageId);
 
                 await channel.BasicAckAsync(
-                    eventArgs.DeliveryTag,
-                    multiple: false);
+                    deliveryTag: delivery.DeliveryTag,
+                    multiple: false,
+                    cancellationToken: stoppingToken);
+            }
+            catch (OperationCanceledException)
+                when (stoppingToken.IsCancellationRequested)
+            {
+                // Leave the message unacknowledged during shutdown.
+                // Closing the connection allows RabbitMQ to redeliver it.
             }
             catch (Exception exception)
             {
                 logger.LogError(
                     exception,
-                    "Failed to process email confirmation message.");
+                    "Failed to process notification {MessageId}.",
+                    delivery.BasicProperties.MessageId);
 
                 await channel.BasicNackAsync(
-                    eventArgs.DeliveryTag,
+                    deliveryTag: delivery.DeliveryTag,
                     multiple: false,
-                    requeue: false);
+                    requeue: false,
+                    cancellationToken: stoppingToken);
             }
         };
 

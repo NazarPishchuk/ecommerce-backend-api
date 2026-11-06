@@ -51,6 +51,7 @@ public sealed class OutboxProcessor(
         foreach (var message in messages)
         {
             await publisher.PublishAsync(
+                message.Id,
                 message.RoutingKey,
                 message.Payload,
                 cancellationToken);
