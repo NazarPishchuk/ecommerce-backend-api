@@ -106,6 +106,12 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<DateTimeOffset?>("PaidAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("PaymentId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -351,6 +357,24 @@ namespace ECommerce.Infrastructure.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("ECommerce.Infrastructure.Persistence.Inbox.InboxMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("ProcessedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("InboxMessages", (string)null);
                 });
 
             modelBuilder.Entity("ECommerce.Infrastructure.Persistence.Outbox.OutboxMessage", b =>

@@ -1,0 +1,91 @@
+﻿@page "/pay/{id}"
+@model ECommerce.FakePaymentProvider.Pages.PayModel
+@using ECommerce.FakePaymentProvider.Entities
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Test Payment</title>
+</head>
+<body>
+    <main>
+        <h1>Test Payment</h1>
+
+        <p>FakePaymentProvider — no real money will be charged.</p>
+
+        <dl>
+            <dt>Session</dt>
+            <dd>@Model.PaymentSession.Id</dd>
+
+            <dt>Amount</dt>
+            <dd>
+                @Model.PaymentSession.Amount.ToString(
+                    "0.00",
+                    System.Globalization.CultureInfo.InvariantCulture)
+                @Model.PaymentSession.Currency
+            </dd>
+
+            <dt>Fake provider status</dt>
+            <dd>@Model.PaymentSession.Status</dd>
+        </dl>
+
+        @if (Model.ErrorMessage is not null)
+        {
+            <p role="alert">@Model.ErrorMessage</p>
+        }
+
+        @if (Model.PaymentSession.Status == FakePaymentStatus.Pending)
+        {
+            <form method="post"
+                  asp-page="/Pay"
+                  asp-page-handler="Succeed"
+                  asp-route-id="@Model.PaymentSession.Id">
+                <button type="submit">
+                    Simulate Successful Payment
+                </button>
+            </form>
+
+            <form method="post"
+                  asp-page="/Pay"
+                  asp-page-handler="Fail"
+                  asp-route-id="@Model.PaymentSession.Id">
+                <button type="submit">
+                    Simulate Failed Payment
+                </button>
+            </form>
+        }
+        else
+        {
+            @if (Model.PaymentSession.Status == FakePaymentStatus.Succeeded)
+            {
+                <p>The payment simulation succeeded in the fake provider.</p>
+            }
+            else
+            {
+                <p>The payment simulation failed in the fake provider.</p>
+            }
+
+            <p>
+                This is the provider's result. The payment status in
+                PaymentService and the order status are checked separately.
+            </p>
+
+            <form method="post"
+                  asp-page="/Pay"
+                  asp-page-handler="RetryWebhook"
+                  asp-route-id="@Model.PaymentSession.Id">
+                <button type="submit">
+                    Retry Sending Result
+                </button>
+            </form>
+        }
+    </main>
+</body>
+</html>

@@ -4,6 +4,11 @@ namespace ECommerce.Application.Interfaces;
 
 public interface ICartRepository
 {
+
+    Task<bool> TryConsumeItemsAsync(
+        int cartId,
+        IReadOnlyCollection<CartItem> items,
+        CancellationToken cancellationToken);
     Task<Cart?> GetByUserIdWithItemsAsync(
         string userId,
         CancellationToken cancellationToken);

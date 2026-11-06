@@ -4,6 +4,7 @@ using ECommerce.Infrastructure.Identity;
 using ECommerce.Infrastructure.Persistence.Outbox;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using ECommerce.Infrastructure.Persistence.Inbox;
 
 
 namespace ECommerce.Infrastructure.Persistence;
@@ -30,6 +31,7 @@ public class ECommerceDbContext : IdentityDbContext<ApplicationUser>, IUnitOfWor
     public DbSet<SellerProfile> SellerProfiles { get; set; }
     public DbSet<OutboxMessage> OutboxMessages { get; set; }
     public DbSet<SellerOrder> SellerOrders { get; set; }
+    public DbSet<InboxMessage> InboxMessages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

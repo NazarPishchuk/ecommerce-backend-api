@@ -9,6 +9,28 @@ namespace ECommerce.Infrastructure.Persistence.Repositories;
 public class CartRepository(
     ECommerceDbContext dbContext) : ICartRepository
 {
+
+    public async Task<bool> TryConsumeItemsAsync(
+    int cartId,
+    IReadOnlyCollection<CartItem> items,
+    CancellationToken cancellationToken)
+    {
+        // The caller must keep this operation inside the checkout transaction.
+        foreach (var item in items.OrderBy(item => item.Id))
+        {
+            var deleted = await dbContext.CartItems
+                .Where(x => x.CartId == cartId &&
+                            x.Id == item.Id &&
+                            x.ProductId == item.ProductId &&
+                            x.Quantity == item.Quantity)
+                .ExecuteDeleteAsync(cancellationToken);
+
+            if (deleted != 1)
+                return false;
+        }
+
+        return items.Count > 0;
+    }
     public async Task<Cart?> GetByUserIdWithItemsAsync(
         string userId,
         CancellationToken cancellationToken)

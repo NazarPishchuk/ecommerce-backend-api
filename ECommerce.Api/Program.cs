@@ -1,3 +1,4 @@
+using ECommerce.Api.Services;
 using ECommerce.Application.Authentication;
 using ECommerce.Application.Interfaces;
 using ECommerce.Application.Mapping;
@@ -17,6 +18,7 @@ using Serilog;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json.Serialization;
+using ECommerce.Infrastructure.Messaging.Payments;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -147,6 +149,16 @@ builder.Services
     .AddDefaultTokenProviders();
 
 
+builder.Services.AddHttpClient<
+    IOrderPaymentService,
+    OrderPaymentService>(client =>
+    {
+        client.BaseAddress = new Uri(
+            builder.Configuration["PaymentService:BaseUrl"]
+            ?? throw new InvalidOperationException(
+                "PaymentService BaseUrl is not configured."));
+    });
+
 builder.Services
     .AddAuthentication(options =>
     {
@@ -249,6 +261,11 @@ if (builder.Environment.IsDevelopment())
 
     builder.Services.AddScoped<DevelopmentAdminSeeder>();
 }
+
+builder.Services.AddScoped<PaymentEventHandler>();
+
+builder.Services.AddScoped<PaymentEventHandler>();
+builder.Services.AddHostedService<PaymentEventsConsumer>();
 
 var app = builder.Build();
 
