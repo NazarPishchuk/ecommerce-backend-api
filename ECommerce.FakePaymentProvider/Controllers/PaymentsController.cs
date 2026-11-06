@@ -15,6 +15,15 @@ public class PaymentsController(
     {
         var result = paymentSessionService.CreateSession(dto);
 
+        if (result is null)
+        {
+            return Conflict(new
+            {
+                Error =
+                    "PaymentId already exists with another amount or currency."
+            });
+        }
+
         return Created(result.PaymentUrl, result);
     }
 }

@@ -2,7 +2,10 @@
 
 public interface IPaymentSessionStore
 {
-    void Add(PaymentSession session);
+    PaymentSession? GetOrCreate(
+        Guid paymentId,
+        decimal amount,
+        string currency);
 
     PaymentSession? GetById(string id);
 }

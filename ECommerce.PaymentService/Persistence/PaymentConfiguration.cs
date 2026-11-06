@@ -20,10 +20,17 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.Property(x => x.ProviderPaymentId)
             .HasMaxLength(200);
 
-        builder.HasIndex(x => x.OrderId);
+        builder.HasIndex(p => p.OrderId)
+            .IsUnique()
+            .HasFilter(
+                $"[Status] IN ({(int)PaymentStatus.Pending}, " +
+                $"{(int)PaymentStatus.Succeeded})");
 
         builder.HasIndex(x => x.ProviderPaymentId)
             .IsUnique()
             .HasFilter("[ProviderPaymentId] IS NOT NULL");
+
+        builder.Property(x => x.PaymentUrl)
+            .HasMaxLength(2048);
     }
 }

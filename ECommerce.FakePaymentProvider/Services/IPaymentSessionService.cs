@@ -5,7 +5,7 @@ namespace ECommerce.FakePaymentProvider.Services;
 
 public interface IPaymentSessionService
 {
-    CreatePaymentSessionResultDto CreateSession(
+    CreatePaymentSessionResultDto? CreateSession(
         CreatePaymentSessionDto dto);
 
     GetPaymentSessionDto? GetSession(string id);

@@ -46,6 +46,10 @@ namespace ECommerce.PaymentService.Persistence.Migrations
                     b.Property<DateTime?>("PaidAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("PaymentUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
+
                     b.Property<string>("ProviderPaymentId")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
@@ -55,7 +59,9 @@ namespace ECommerce.PaymentService.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrderId");
+                    b.HasIndex("OrderId")
+                        .IsUnique()
+                        .HasFilter("[Status] IN (0, 1)");
 
                     b.HasIndex("ProviderPaymentId")
                         .IsUnique()
