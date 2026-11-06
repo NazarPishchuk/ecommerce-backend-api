@@ -136,6 +136,19 @@ public class OrderService(
                await unitOfWork.BeginTransactionAsync(
                    cancellationToken);
 
+        var cartConsumed = await cartRepository.TryConsumeItemsAsync(
+            cart.Id,
+            cart.CartItems.ToList(),
+            cancellationToken);
+
+        if (!cartConsumed)
+        {
+            return Result.Failure(new Error(
+                "Order.CheckoutConflict",
+                ErrorType.Conflict,
+                "Cart changed during checkout. Please refresh it and try again."));
+        }
+
         foreach (var cartItem in cart.CartItems)
         {
             var stockUpdated =
