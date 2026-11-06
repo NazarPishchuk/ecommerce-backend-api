@@ -17,4 +17,6 @@ public class Payment
     public DateTime CreatedAt { get; set; }
 
     public DateTime? PaidAt { get; set; }
+
+    public string? PaymentUrl { get; set; }
 }

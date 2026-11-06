@@ -8,7 +8,7 @@ public class PaymentSessionService(
     IPaymentWebhookSender webhookSender,
     IConfiguration configuration) : IPaymentSessionService
 {
-    public CreatePaymentSessionResultDto CreateSession(
+    public CreatePaymentSessionResultDto? CreateSession(
         CreatePaymentSessionDto dto)
     {
         var baseUrl =
@@ -16,14 +16,13 @@ public class PaymentSessionService(
             ?? throw new InvalidOperationException(
                 "PublicBaseUrl is not configured.");
 
-        var session = new PaymentSession
-        {
-            PaymentId = dto.PaymentId,
-            Amount = dto.Amount,
-            Currency = dto.Currency.ToUpperInvariant()
-        };
+        var session = sessionStore.GetOrCreate(
+            dto.PaymentId,
+            dto.Amount,
+            dto.Currency.ToUpperInvariant());
 
-        sessionStore.Add(session);
+        if (session is null)
+            return null;
 
         var paymentUrl =
             $"{baseUrl.TrimEnd('/')}/pay/{session.Id}";
@@ -90,3 +89,4 @@ public class PaymentSessionService(
         return result;
     }
 }
+

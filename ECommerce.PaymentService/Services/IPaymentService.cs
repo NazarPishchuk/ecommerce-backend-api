@@ -1,11 +1,10 @@
-﻿using ECommerce.PaymentService.Domain;
-using ECommerce.PaymentService.DTOs;
+﻿using ECommerce.PaymentService.DTOs;
 
 namespace ECommerce.PaymentService.Services;
 
 public interface IPaymentService
 {
-    Task<CreatePaymentResultDto> CreatePaymentAsync(
+    Task<PaymentCreationResult> CreatePaymentAsync(
         int orderId,
         decimal amount,
         string currency,

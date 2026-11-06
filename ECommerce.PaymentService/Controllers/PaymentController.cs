@@ -1,17 +1,19 @@
-﻿using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
-using ECommerce.PaymentService.Configuration;
+﻿using ECommerce.PaymentService.Configuration;
 using ECommerce.PaymentService.DTOs;
 using ECommerce.PaymentService.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 
 namespace ECommerce.PaymentService.Controllers;
 
 [ApiController]
 [Route("api/payments")]
-public class PaymentsController(
+public class PaymentController(
     IPaymentService paymentService,
     PaymentWebhookService webhookService,
     IOptions<FakePaymentProviderOptions> options) : ControllerBase
@@ -21,19 +23,57 @@ public class PaymentsController(
 
     [HttpPost]
     public async Task<IActionResult> CreatePayment(
-        [FromBody] CreatePaymentDto dto,
-        CancellationToken cancellationToken)
+    [FromBody] CreatePaymentDto dto,
+    CancellationToken cancellationToken)
     {
-        var result = await paymentService.CreatePaymentAsync(
-            dto.OrderId,
-            dto.Amount,
-            dto.Currency,
-            cancellationToken);
+        PaymentCreationResult result;
+
+        try
+        {
+            result = await paymentService.CreatePaymentAsync(
+                dto.OrderId,
+                dto.Amount,
+                dto.Currency,
+                cancellationToken);
+        }
+        catch (DbUpdateException ex) when (
+            ex.InnerException is SqlException { Number: 2601 or 2627 })
+        {
+            return Conflict(new
+            {
+                Error = "An active payment already exists."
+            });
+        }
+
+        if (result.Status == PaymentCreationStatus.AlreadyPaid)
+        {
+            return Conflict(new
+            {
+                Error = "Order has already been paid."
+            });
+        }
+
+        if (result.Status == PaymentCreationStatus.Conflict)
+        {
+            return Conflict(new
+            {
+                Error = "Payment amount or currency does not match."
+            });
+        }
+
+        var payment = result.Payment
+            ?? throw new InvalidOperationException(
+                "Successful payment creation returned no payment.");
+
+        if (result.Status == PaymentCreationStatus.Reused)
+        {
+            return Ok(payment);
+        }
 
         return CreatedAtAction(
             nameof(GetPayment),
-            new { id = result.PaymentId },
-            result);
+            new { id = payment.PaymentId },
+            payment);
     }
 
     [HttpGet("{id:guid}")]
