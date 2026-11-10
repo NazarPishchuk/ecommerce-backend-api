@@ -102,6 +102,13 @@ if (app.Configuration.GetValue<bool>("Database:ApplyMigrationsOnStartup"))
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint(
+            "/openapi/v1.json",
+            "PaymentService API v1");
+    });
 }
 
 app.UseHttpsRedirection();
