@@ -67,13 +67,18 @@ public sealed class EmailSender(IOptions<EmailOptions> options) : IEmailSender
         await smtpClient.ConnectAsync(
             _options.Host,
             _options.Port,
-            SecureSocketOptions.StartTls,
+            _options.UseStartTls
+                ? SecureSocketOptions.StartTls
+                : SecureSocketOptions.None,
             cancellationToken);
 
-        await smtpClient.AuthenticateAsync(
-            _options.UserName,
-            _options.Password,
-            cancellationToken);
+        if (_options.UseAuthentication)
+        {
+            await smtpClient.AuthenticateAsync(
+                _options.UserName,
+                _options.Password,
+                cancellationToken);
+        }
 
         await smtpClient.SendAsync(
             message,

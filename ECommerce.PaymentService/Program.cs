@@ -5,6 +5,7 @@ using ECommerce.PaymentService.Persistence.Outbox;
 using ECommerce.PaymentService.Providers;
 using ECommerce.PaymentService.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -76,6 +77,27 @@ builder.Services.AddSingleton<RabbitMqPublisher>();
 builder.Services.AddHostedService<OutboxProcessor>();
 
 var app = builder.Build();
+
+if (app.Configuration.GetValue<bool>("Database:ApplyMigrationsOnStartup"))
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    var database = scope.ServiceProvider.GetRequiredService<PaymentDbContext>().Database;
+    for (var attempt = 1; ; attempt++)
+    {
+        try
+        {
+            await database.MigrateAsync();
+            break;
+        }
+        catch (SqlException exception) when (
+            attempt < 12 && exception.Number is 1801 or 4060 or 53 or 233 or 40 or 2 or -2)
+        {
+            app.Logger.LogWarning(exception,
+                "SQL Server is still starting. Retrying payment migrations in 5 seconds.");
+            await Task.Delay(TimeSpan.FromSeconds(5));
+        }
+    }
+}
 
 if (app.Environment.IsDevelopment())
 {

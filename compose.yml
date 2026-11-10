@@ -1,57 +1,181 @@
 services:
   sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: ecommerce-sqlserver
-
-    ports:
-      - "1433:1433"
-
+    image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_PID: "Developer"
-      MSSQL_SA_PASSWORD: ${SQLSERVER_SA_PASSWORD:?SQLSERVER_SA_PASSWORD is required}
-
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${SQLSERVER_SA_PASSWORD:?Set SQLSERVER_SA_PASSWORD in .env}
     volumes:
       - sqlserver_data:/var/opt/mssql
-
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' -b -o /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
     restart: unless-stopped
 
   rabbitmq:
-    image: rabbitmq:4-management
     container_name: ecommerce-rabbitmq
-
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-
+    image: rabbitmq:4-management
     environment:
       RABBITMQ_DEFAULT_USER: ecommerce
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?RABBITMQ_PASSWORD is required}
-
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD in .env}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-
+    ports:
+      - "127.0.0.1:${RABBITMQ_UI_PORT:-15672}:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
     restart: unless-stopped
 
   seq:
-    image: datalust/seq:latest
     container_name: ecommerce-seq
-
-    ports:
-      - "5341:80"
-
+    image: datalust/seq:latest
     environment:
       ACCEPT_EULA: "Y"
       SEQ_FIRSTRUN_ADMINUSERNAME: admin
-      SEQ_FIRSTRUN_ADMINPASSWORD: ${SEQ_ADMIN_PASSWORD:?SEQ_ADMIN_PASSWORD is required}
-      SEQ_FIRSTRUN_REQUIREAUTHENTICATIONFORHTTPINGESTION: "true"
-
+      SEQ_FIRSTRUN_ADMINPASSWORD: ${SEQ_ADMIN_PASSWORD:?Set SEQ_ADMIN_PASSWORD in .env}
+      SEQ_FIRSTRUN_REQUIREAUTHENTICATIONFORHTTPINGESTION: "false"
     volumes:
       - seq_data:/data
+    ports:
+      - "127.0.0.1:${SEQ_UI_PORT:-5341}:80"
+    restart: unless-stopped
 
+  mailpit:
+    container_name: ecommerce-mailpit
+    image: axllent/mailpit:latest
+    environment:
+      MP_DATABASE: /data/mailpit.db
+    volumes:
+      - mailpit_data:/data
+    ports:
+      - "127.0.0.1:${MAILPIT_UI_PORT:-8025}:8025"
+    restart: unless-stopped
+
+  api:
+    container_name: ecommerce-api
+    build:
+      context: .
+      dockerfile: ECommerce.Api/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      Database__ApplyMigrationsOnStartup: "true"
+      ConnectionStrings__ECommerceDbConnectionString: "Server=sqlserver,1433;Database=ECommerceDb;User Id=sa;Password=${SQLSERVER_SA_PASSWORD:?Set SQLSERVER_SA_PASSWORD in .env};Encrypt=True;TrustServerCertificate=True"
+      RabbitMq__HostName: rabbitmq
+      RabbitMq__Port: "5672"
+      RabbitMq__UserName: ecommerce
+      RabbitMq__Password: ${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD in .env}
+      RabbitMq__ExchangeName: ecommerce.notifications
+      Seq__ServerUrl: http://seq:80
+      Jwt__Key: ${JWT_KEY:?Set JWT_KEY in .env}
+      Jwt__Issuer: ${JWT_ISSUER:-ECommerce.Api}
+      Jwt__Audience: ${JWT_AUDIENCE:-ECommerce.Client}
+      SeedAdmin__Email: ${SEED_ADMIN_EMAIL:?Set SEED_ADMIN_EMAIL in .env}
+      SeedAdmin__Password: ${SEED_ADMIN_PASSWORD:?Set SEED_ADMIN_PASSWORD in .env}
+      PaymentService__BaseUrl: http://payment-service:8080/
+    ports:
+      - "127.0.0.1:${API_PORT:-8080}:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      seq:
+        condition: service_started
+      payment-service:
+        condition: service_started
+    restart: unless-stopped
+
+  payment-service:
+    container_name: ecommerce-payment-service
+    build:
+      context: .
+      dockerfile: ECommerce.PaymentService/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      Database__ApplyMigrationsOnStartup: "true"
+      ConnectionStrings__PaymentDbConnectionString: "Server=sqlserver,1433;Database=PaymentDb;User Id=sa;Password=${SQLSERVER_SA_PASSWORD:?Set SQLSERVER_SA_PASSWORD in .env};Encrypt=True;TrustServerCertificate=True"
+      RabbitMq__HostName: rabbitmq
+      RabbitMq__Port: "5672"
+      RabbitMq__UserName: ecommerce
+      RabbitMq__Password: ${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD in .env}
+      RabbitMq__ExchangeName: ecommerce.notifications
+      FakePaymentProvider__BaseUrl: http://fake-payment-provider:8080/
+      FakePaymentProvider__WebhookSecret: ${PAYMENT_WEBHOOK_SECRET:?Set PAYMENT_WEBHOOK_SECRET in .env}
+    ports:
+      - "127.0.0.1:${PAYMENT_PORT:-8081}:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      fake-payment-provider:
+        condition: service_started
+    restart: unless-stopped
+
+  fake-payment-provider:
+    container_name: ecommerce-fake-payment-provider
+    build:
+      context: .
+      dockerfile: ECommerce.FakePaymentProvider/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      FakePaymentProvider__PublicBaseUrl: ${PUBLIC_FAKE_PAYMENT_URL:-http://localhost:8082}
+      FakePaymentProvider__PaymentServiceWebhookUrl: http://payment-service:8080/api/payments/webhook
+      FakePaymentProvider__WebhookSecret: ${PAYMENT_WEBHOOK_SECRET:?Set PAYMENT_WEBHOOK_SECRET in .env}
+    ports:
+      - "127.0.0.1:${FAKE_PAYMENT_PORT:-8082}:8080"
+    restart: unless-stopped
+
+  notification-service:
+    container_name: ecommerce-notification-service
+    build:
+      context: .
+      dockerfile: ECommerce.NotificationService/Dockerfile
+    environment:
+      DOTNET_ENVIRONMENT: Development
+      Database__ApplyMigrationsOnStartup: "true"
+      ConnectionStrings__NotificationDbConnectionString: "Server=sqlserver,1433;Database=NotificationDb;User Id=sa;Password=${SQLSERVER_SA_PASSWORD:?Set SQLSERVER_SA_PASSWORD in .env};Encrypt=True;TrustServerCertificate=True"
+      RabbitMq__HostName: rabbitmq
+      RabbitMq__Port: "5672"
+      RabbitMq__UserName: ecommerce
+      RabbitMq__Password: ${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD in .env}
+      RabbitMq__ExchangeName: ecommerce.notifications
+      RabbitMq__QueueName: email-confirmation
+      RabbitMq__DeadLetterExchangeName: ecommerce.dead-letter
+      RabbitMq__DeadLetterQueueName: email-confirmation.dlq
+      RabbitMq__Retry10sQueueName: email-confirmation.retry.10s
+      RabbitMq__Retry30sQueueName: email-confirmation.retry.30s
+      Email__Host: ${SMTP_HOST:-mailpit}
+      Email__Port: ${SMTP_PORT:-1025}
+      Email__UseAuthentication: ${SMTP_USE_AUTHENTICATION:-false}
+      Email__UseStartTls: ${SMTP_USE_STARTTLS:-false}
+      Email__UserName: ${SMTP_USERNAME:-}
+      Email__Password: ${SMTP_PASSWORD:-}
+      Email__FromEmail: ${SMTP_FROM_EMAIL:-noreply@example.test}
+      Email__FromName: ${SMTP_FROM_NAME:-ECommerce}
+      Email__ApplicationUrl: ${PUBLIC_API_URL:-http://localhost:8080}
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
     restart: unless-stopped
 
 volumes:
   sqlserver_data:
   rabbitmq_data:
   seq_data:
+  mailpit_data:

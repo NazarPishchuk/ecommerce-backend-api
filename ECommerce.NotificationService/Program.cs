@@ -2,6 +2,7 @@ using ECommerce.NotificationService.Email;
 using ECommerce.NotificationService.Messaging;
 using ECommerce.NotificationService.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -48,11 +49,11 @@ builder.Services
         options => options.Port is > 0 and <= 65535,
         "Email Port must be valid.")
     .Validate(
-        options => !string.IsNullOrWhiteSpace(options.UserName),
-        "Email UserName is required.")
+        options => !options.UseAuthentication || !string.IsNullOrWhiteSpace(options.UserName),
+        "Email UserName is required when authentication is enabled.")
     .Validate(
-        options => !string.IsNullOrWhiteSpace(options.Password),
-        "Email Password is required.")
+        options => !options.UseAuthentication || !string.IsNullOrWhiteSpace(options.Password),
+        "Email Password is required when authentication is enabled.")
     .Validate(
         options => !string.IsNullOrWhiteSpace(options.FromEmail),
         "Email FromEmail is required.")
@@ -63,5 +64,24 @@ builder.Services.AddHostedService<EmailConfirmationRequestedConsumer>();
 builder.Services.AddSingleton<IEmailSender, EmailSender>();
 
 var host = builder.Build();
+
+if (builder.Configuration.GetValue<bool>("Database:ApplyMigrationsOnStartup"))
+{
+    await using var scope = host.Services.CreateAsyncScope();
+    var database = scope.ServiceProvider.GetRequiredService<NotificationDbContext>().Database;
+    for (var attempt = 1; ; attempt++)
+    {
+        try
+        {
+            await database.MigrateAsync();
+            break;
+        }
+        catch (SqlException exception) when (
+            attempt < 12 && exception.Number is 1801 or 4060 or 53 or 233 or 40 or 2 or -2)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(5));
+        }
+    }
+}
 
 await host.RunAsync();
