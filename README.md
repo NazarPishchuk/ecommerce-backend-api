@@ -10,8 +10,50 @@ Built with **ASP.NET Core**, **Entity Framework Core**, and **Microsoft SQL Serv
 
 ---
 
+## Docker Quick Start
+
+Install Docker Desktop (or Docker Engine with Compose), start it, and give Docker enough memory for SQL Server. No local .NET SDK, SQL Server, RabbitMQ, or SMTP account is needed.
+
+```bash
+git clone https://github.com/NazarPishchuk/ecommerce-backend-api
+cd ecommerce-backend-api
+cp .env.example .env
+```
+
+Edit `.env`: replace every `CHANGE_ME` value with your own strong local secret. Use a random JWT key of at least 32 characters and a SQL Server password that meets SQL Server complexity requirements. `.env` is ignored by Git and excluded from Docker builds. The default SMTP settings point to Mailpit; Gmail credentials are not needed. For a real SMTP provider, set `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, and set both `SMTP_USE_AUTHENTICATION` and `SMTP_USE_STARTTLS` to `true`.
+
+```bash
+docker compose up -d --build
+docker compose ps
+```
+
+On a fresh SQL Server volume, the API, PaymentService, and NotificationService apply their own EF Core migrations before starting. The API also creates the development admin account from `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD`. No manual database command is needed. SQL Server, RabbitMQ, Seq, and Mailpit use named volumes; `docker compose down` preserves them.
+
+| Local address | Purpose |
+| --- | --- |
+| http://localhost:8080 | Main API |
+| http://localhost:8080/openapi/v1.json | API OpenAPI document (Swagger UI is not installed) |
+| http://localhost:8081/openapi/v1.json | PaymentService OpenAPI document |
+| http://localhost:8082 | Fake payment checkout pages |
+| http://localhost:8025 | Mailpit inbox and captured confirmation emails |
+| http://localhost:15672 | RabbitMQ management, user `ecommerce` |
+| http://localhost:5341 | Seq, user `admin` |
+
+Register a user with `POST /api/auth/register`, open the message in Mailpit, and click its confirmation link. Payment checkout links point to the browser-facing fake provider URL. Containers communicate through Compose service names; the fake provider sends its webhook to PaymentService on the private network.
+
+```bash
+docker compose logs -f api payment-service notification-service
+docker compose restart
+docker compose down
+```
+
+If startup fails, check `docker compose ps` and `docker compose logs --tail=100 <service>`. SQL Server needs a strong password and enough memory; its health check must pass before the dependent services start. If a host port is occupied, change its `*_PORT` entry in `.env` and update `PUBLIC_API_URL` or `PUBLIC_FAKE_PAYMENT_URL` when changing the corresponding browser-facing port. Mailpit uses unencrypted, unauthenticated SMTP only inside this local Compose network. The fake provider keeps payment sessions in memory, so its checkout pages for existing sessions do not survive a provider restart; payment records remain in SQL Server.
+
+---
+
 ## 📖 Table of Contents
 
+- [Docker Quick Start](#docker-quick-start)
 - [Overview](#-overview)
 - [Features](#-features)
 - [Architecture](#-architecture)

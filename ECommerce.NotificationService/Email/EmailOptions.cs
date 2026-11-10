@@ -9,6 +9,8 @@ public sealed class EmailOptions
 
     public string UserName { get; init; } = null!;
     public string Password { get; init; } = null!;
+    public bool UseAuthentication { get; init; } = true;
+    public bool UseStartTls { get; init; } = true;
 
     public string FromEmail { get; init; } = null!;
     public string FromName { get; init; } = null!;

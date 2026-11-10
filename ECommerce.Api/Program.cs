@@ -19,6 +19,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json.Serialization;
 using ECommerce.Infrastructure.Messaging.Payments;
+using Microsoft.Data.SqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,8 +28,7 @@ builder.Host.UseSerilog((context, configuration) =>
     var seqServerUrl = context.Configuration["Seq:ServerUrl"]
         ?? throw new InvalidOperationException("Seq server URL is not configured.");
 
-    var seqApiKey = context.Configuration["Seq:ApiKey"]
-        ?? throw new InvalidOperationException("Seq API key is not configured.");
+    var seqApiKey = context.Configuration["Seq:ApiKey"];
 
     configuration
         .ReadFrom.Configuration(context.Configuration)
@@ -268,6 +268,27 @@ builder.Services.AddScoped<PaymentEventHandler>();
 builder.Services.AddHostedService<PaymentEventsConsumer>();
 
 var app = builder.Build();
+
+if (app.Configuration.GetValue<bool>("Database:ApplyMigrationsOnStartup"))
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    var database = scope.ServiceProvider.GetRequiredService<ECommerceDbContext>().Database;
+    for (var attempt = 1; ; attempt++)
+    {
+        try
+        {
+            await database.MigrateAsync();
+            break;
+        }
+        catch (SqlException exception) when (
+            attempt < 12 && exception.Number is 1801 or 4060 or 53 or 233 or 40 or 2 or -2)
+        {
+            app.Logger.LogWarning(exception,
+                "SQL Server is still starting. Retrying API migrations in 5 seconds.");
+            await Task.Delay(TimeSpan.FromSeconds(5));
+        }
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
