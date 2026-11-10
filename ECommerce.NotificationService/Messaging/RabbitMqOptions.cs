@@ -16,4 +16,6 @@ public sealed class RabbitMqOptions
     public required string QueueName { get; init; }
     public required string DeadLetterExchangeName { get; init; }
     public required string DeadLetterQueueName { get; init; }
+    public required string Retry10sQueueName { get; init; }
+    public required string Retry30sQueueName { get; init; }
 }
