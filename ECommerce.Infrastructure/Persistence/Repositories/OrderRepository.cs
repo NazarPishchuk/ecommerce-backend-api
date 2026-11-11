@@ -105,9 +105,15 @@ public class OrderRepository(
         CancellationToken cancellationToken)
     {
         var affectedRows = await dbContext.SellerOrders
-            .Where(x => x.Id == id &&
-                   x.SellerProfile!.UserId == userId &&
-                   x.Status == SellerOrderStatus.Pending)
+            .Where(x =>
+                x.Id == id &&
+                x.SellerProfile != null &&
+                x.SellerProfile.UserId == userId &&
+                x.Status == SellerOrderStatus.Pending &&
+                x.Order.PaymentId != null &&
+                x.Order.PaidAtUtc != null &&
+                (x.Order.Status == OrderStatus.Pending ||
+                 x.Order.Status == OrderStatus.Processing))
             .ExecuteUpdateAsync(
                 setters => setters.SetProperty(
                     x => x.Status,
