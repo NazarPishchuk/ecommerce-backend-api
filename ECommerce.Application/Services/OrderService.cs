@@ -396,6 +396,15 @@ public class OrderService(
                 "Seller order with this id was not found."));
         }
 
+        if (sellerOrder.Order.PaymentId is null ||
+            sellerOrder.Order.PaidAtUtc is null)
+        {
+            return Result.Failure(new Error(
+                "SellerOrder.PaymentRequired",
+                ErrorType.Conflict,
+                "Payment has not been successfully reconciled yet."));
+        }
+
         if (sellerOrder.Status != SellerOrderStatus.Pending)
         {
             return Result.Failure(new Error(
