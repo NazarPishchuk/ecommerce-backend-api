@@ -8,4 +8,6 @@ public class GetOrderListDto
     public OrderStatus Status { get; set; }
     public decimal TotalAmount { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
+    public Guid? PaymentId { get; set; }
+    public DateTimeOffset? PaidAtUtc { get; set; }
 }

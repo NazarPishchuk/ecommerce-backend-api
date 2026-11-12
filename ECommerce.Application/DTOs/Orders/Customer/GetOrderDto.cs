@@ -8,6 +8,8 @@ public class GetOrderDto
     public OrderStatus Status { get; set; }
     public decimal TotalAmount { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
+    public Guid? PaymentId { get; set; }
+    public DateTimeOffset? PaidAtUtc { get; set; }
 
     public IReadOnlyList<GetSellerOrderDto> SellerOrders { get; set; }
         = new List<GetSellerOrderDto>();

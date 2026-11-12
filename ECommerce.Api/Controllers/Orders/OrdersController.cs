@@ -92,6 +92,6 @@ public class OrdersController(
         if (result.IsFailure)
             return MapError(result.Error!);
 
-        return Ok(result);
+        return Ok(result.Value);
     }
 }
