@@ -6,20 +6,23 @@ using ECommerce.Application.Services;
 using ECommerce.Infrastructure.Authentication;
 using ECommerce.Infrastructure.Identity;
 using ECommerce.Infrastructure.Messaging;
+using ECommerce.Infrastructure.Messaging.Payments;
 using ECommerce.Infrastructure.Persistence;
 using ECommerce.Infrastructure.Persistence.Outbox;
 using ECommerce.Infrastructure.Persistence.Repositories;
 using ECommerce.Infrastructure.Persistence.Seeding;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 using Serilog;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json.Serialization;
-using ECommerce.Infrastructure.Messaging.Payments;
-using Microsoft.Data.SqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -76,7 +79,63 @@ builder.Services.AddControllers()
                 .Add(new JsonStringEnumConverter());
         });
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+
+
+builder.Services.AddOpenApi(options =>
+{
+    // 1. Register JWT Bearer authentication in OpenAPI
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        document.Components ??= new OpenApiComponents();
+
+        document.Components.SecuritySchemes ??=
+            new Dictionary<string, IOpenApiSecurityScheme>();
+
+        document.Components.SecuritySchemes["Bearer"] =
+            new OpenApiSecurityScheme
+            {
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header
+            };
+
+        return Task.CompletedTask;
+    });
+
+    // 2. Apply JWT only to endpoints requiring authorization
+    options.AddOperationTransformer((operation, context, cancellationToken) =>
+    {
+        var metadata = context.Description.ActionDescriptor.EndpointMetadata;
+        var action = context.Description.ActionDescriptor as ControllerActionDescriptor;
+
+        var requiresAuthorization = metadata.OfType<IAuthorizeData>().Any() ||
+            action?.ControllerTypeInfo.GetCustomAttributes(inherit: true)
+                .OfType<IAuthorizeData>().Any() == true ||
+            action?.MethodInfo.GetCustomAttributes(inherit: true)
+                .OfType<IAuthorizeData>().Any() == true;
+
+        var allowsAnonymous = metadata.OfType<IAllowAnonymous>().Any() ||
+            action?.ControllerTypeInfo.GetCustomAttributes(inherit: true)
+                .OfType<IAllowAnonymous>().Any() == true ||
+            action?.MethodInfo.GetCustomAttributes(inherit: true)
+                .OfType<IAllowAnonymous>().Any() == true;
+
+        operation.Security = [];
+
+        if (!requiresAuthorization || allowsAnonymous || context.Document is null)
+            return Task.CompletedTask;
+
+        operation.Security.Add(new OpenApiSecurityRequirement
+        {
+            [new OpenApiSecuritySchemeReference("Bearer", context.Document)] = []
+        });
+
+        return Task.CompletedTask;
+    });
+});
+
+
 
 builder.Services.AddDbContext<ECommerceDbContext>(options =>
     options.UseSqlServer(
