@@ -54,8 +54,8 @@ public class OrderService(
                 || item.Product.SellerProfileId is null)
             {
                 return Result.Failure(new Error(
-                    "CartItem.Failure",
-                    ErrorType.Failure,
+                    "CartItem.Unavailable",
+                    ErrorType.Conflict,
                     "Product is not available."));
             }
 
