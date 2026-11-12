@@ -1,13 +1,14 @@
 ﻿using ECommerce.Application.DTOs.CartItems;
 using ECommerce.Application.DTOs.Carts;
 using ECommerce.Application.Interfaces;
+using ECommerce.Application.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.Api.Controllers;
 
 [Route("api/carts")]
-[Authorize]
+[Authorize(Roles = AppRoles.Customer)]
 [ApiController]
 public class CartsController(
     ICartService cartService) : ApiControllerBase

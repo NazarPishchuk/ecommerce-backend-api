@@ -1,6 +1,7 @@
 ﻿using ECommerce.Api.Services;
 using ECommerce.Application.DTOs.Orders.Customer;
 using ECommerce.Application.Interfaces;
+using ECommerce.Application.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,6 +16,7 @@ public class OrdersController(
     IOrderPaymentService orderPaymentService) : ApiControllerBase
 {
     [HttpPost]
+    [Authorize(Roles = AppRoles.Customer)]
     public async Task<IActionResult> CreateOrderAsync(
         CancellationToken cancellationToken)
     {
