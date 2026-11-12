@@ -33,6 +33,7 @@ public class OrdersController(
     }
 
     [HttpGet]
+    [Authorize(Roles = AppRoles.Customer)]
     public async Task<ActionResult<IReadOnlyList<GetOrderListDto>>> GetMineAsync(
     CancellationToken cancellationToken)
     {
@@ -44,6 +45,7 @@ public class OrdersController(
     }
 
     [HttpGet("{id:int}")]
+    [Authorize(Roles = AppRoles.Customer)]
     public async Task<ActionResult<GetOrderDto>> GetMineByIdAsync(
         int id,
         CancellationToken cancellationToken)
@@ -62,6 +64,7 @@ public class OrdersController(
     }
 
     [HttpPatch("{id:int}/cancel")]
+    [Authorize(Roles = AppRoles.Customer)]
     public async Task<IActionResult> CancelAsync(
         int id,
         CancellationToken cancellationToken)
@@ -80,6 +83,7 @@ public class OrdersController(
     }
 
     [HttpPost("{id:int}/pay")]
+    [Authorize(Roles = AppRoles.Customer)]
     public async Task<IActionResult> Pay(
     int id,
     CancellationToken cancellationToken)

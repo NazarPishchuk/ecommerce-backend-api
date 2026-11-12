@@ -7,6 +7,7 @@
     <File Path="README.md" />
   </Folder>
   <Project Path="ECommerce.Api/ECommerce.Api.csproj" />
+  <Project Path="ECommerce.Api.AuthorizationTests/ECommerce.Api.AuthorizationTests.csproj" />
   <Project Path="ECommerce.Application/ECommerce.Application.csproj" Id="5f00a1bc-0e69-4c87-888a-7fc234192300" />
   <Project Path="ECommerce.Contracts/ECommerce.Contracts.csproj" Id="126ad775-6fcb-49ef-8678-7b3d983f4911" />
   <Project Path="ECommerce.Domain/ECommerce.Domain.csproj" Id="02ecb849-92d5-47ed-ba2e-d983d116c2e9" />

@@ -50,7 +50,7 @@ public class SellersController(ISellerProfileService sellerProfileService) : Api
         return Ok(result.Value);
     }
 
-    [Authorize]
+    [Authorize(Roles = AppRoles.Customer)]
     [HttpPost]
     public async Task<ActionResult<CreateSellerProfileResponse>> CreateSellerProfileAsync(
         CreateSellerProfileDto dto, 

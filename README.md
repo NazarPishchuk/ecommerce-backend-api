@@ -408,14 +408,14 @@ Request and response bodies use camelCase JSON; enums are serialized as strings.
 | | `PATCH /api/products/{id}/activate`, `PATCH /api/products/{id}/deactivate` | Seller |
 | | `PATCH /api/products/{id}/block`, `PATCH /api/products/{id}/unblock` | Admin |
 | **Seller profiles** | `GET /api/sellerprofiles`, `GET /api/sellerprofiles/{id}` | public |
-| | `POST /api/sellerprofiles` | any authenticated user |
+| | `POST /api/sellerprofiles` | Customer |
 | | `GET /api/sellerprofiles/mine`, `PUT /api/sellerprofiles`, `DELETE /api/sellerprofiles` | Seller |
 | | `GET /api/admin/sellerprofiles`, `DELETE /api/admin/sellerprofiles/{id}` | Admin |
 | | `PATCH /api/admin/sellerprofiles/{id}/ban`, `PATCH /api/admin/sellerprofiles/{id}/unban` | Admin |
-| **Cart** | `GET /api/carts`, `POST /api/carts/items` | authenticated |
-| | `PATCH /api/carts/items/{id}/increment`, `PATCH /api/carts/items/{id}/decrement`, `DELETE /api/carts/items/{id}` | authenticated |
-| **Orders** | `POST /api/orders` (checkout), `GET /api/orders`, `GET /api/orders/{id}` | authenticated (own orders) |
-| | `PATCH /api/orders/{id}/cancel`, `POST /api/orders/{id}/pay` | authenticated (own orders) |
+| **Cart** | `GET /api/carts`, `POST /api/carts/items` | Customer |
+| | `PATCH /api/carts/items/{id}/increment`, `PATCH /api/carts/items/{id}/decrement`, `DELETE /api/carts/items/{id}` | Customer |
+| **Orders** | `POST /api/orders` (checkout), `GET /api/orders`, `GET /api/orders/{id}` | Customer (own orders) |
+| | `PATCH /api/orders/{id}/cancel`, `POST /api/orders/{id}/pay` | Customer (own orders) |
 | | `GET /api/seller/orders`, `GET /api/seller/orders/{id}` | Seller |
 | | `PATCH /api/seller/orders/{id}/confirm`, `PATCH /api/seller/orders/{id}/reject` | Seller |
 | | `GET /api/admin/orders`, `GET /api/admin/orders/{id}` | Admin |
