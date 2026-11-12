@@ -11,7 +11,7 @@ public class OrderItemConfiguration
         EntityTypeBuilder<OrderItem> builder)
     {
         builder.Property(x => x.ProductName)
-            .HasMaxLength(50)
+            .HasMaxLength(200)
             .IsRequired();
 
         builder.Property(x => x.UnitPrice)
