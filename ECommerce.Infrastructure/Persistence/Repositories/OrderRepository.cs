@@ -145,12 +145,6 @@ public class OrderRepository(
                             sellerOrder.Status != SellerOrderStatus.Rejected)
                                 ? OrderStatus.Rejected
 
-                        : !dbContext.SellerOrders.Any(sellerOrder =>
-                            sellerOrder.OrderId == orderId &&
-                            sellerOrder.Status != SellerOrderStatus.Delivered &&
-                            sellerOrder.Status != SellerOrderStatus.Rejected)
-                                ? OrderStatus.Completed
-
                         : OrderStatus.Processing),
                 cancellationToken);
     }
