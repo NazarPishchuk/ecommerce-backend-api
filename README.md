@@ -252,6 +252,7 @@ cd ecommerce-backend-api
 | `JWT_KEY` | HS256 signing key, at least 32 characters |
 | `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` | Development admin account (password must satisfy Identity's default policy) |
 | `PAYMENT_WEBHOOK_SECRET` | Shared HMAC secret between PaymentService and the provider |
+| `PAYMENT_INTERNAL_API_KEY` | Shared key for internal requests from the main API to PaymentService (at least 32 characters) |
 
 Optional variables with defaults: `JWT_ISSUER`, `JWT_AUDIENCE`, `API_PORT`, `PAYMENT_PORT`, `FAKE_PAYMENT_PORT`, `MAILPIT_UI_PORT`, `RABBITMQ_UI_PORT`, `SEQ_UI_PORT`, `PUBLIC_API_URL`, `PUBLIC_FAKE_PAYMENT_URL`, and the `SMTP_*` group (see [Email and Payment Simulation](#email-and-payment-simulation)).
 
@@ -266,7 +267,7 @@ Copy-Item .env.example .env       # Windows PowerShell
 
 ### 4. Generate local development secrets
 
-Generate a fresh value for each of the six `CHANGE_ME_*` entries and paste it into `.env`. The `Aa1!` prefix guarantees that the two passwords with complexity rules (SQL Server, Identity) are accepted; the rest is random hex, which is safe inside the connection strings Compose builds.
+Generate a fresh value for each of the seven `CHANGE_ME_*` entries and paste it into `.env`. The `Aa1!` prefix guarantees that the two passwords with complexity rules (SQL Server, Identity) are accepted; the rest is random hex, which is safe inside the connection strings Compose builds.
 
 **macOS / Linux** (requires `openssl`):
 
@@ -279,6 +280,7 @@ printf 'SEQ_ADMIN_PASSWORD=%s\n'        "$(gen 16)"
 printf 'JWT_KEY=%s\n'                   "$(gen 32)"
 printf 'SEED_ADMIN_PASSWORD=Aa1!%s\n'   "$(gen 16)"
 printf 'PAYMENT_WEBHOOK_SECRET=%s\n'    "$(gen 32)"
+printf 'PAYMENT_INTERNAL_API_KEY=%s\n'  "$(gen 32)"
 ```
 
 **Windows PowerShell** (5.1 and 7+):
@@ -298,6 +300,7 @@ function New-Secret([int]$Bytes) {
 "JWT_KEY=$(New-Secret 32)"
 "SEED_ADMIN_PASSWORD=Aa1!$(New-Secret 16)"
 "PAYMENT_WEBHOOK_SECRET=$(New-Secret 32)"
+"PAYMENT_INTERNAL_API_KEY=$(New-Secret 32)"
 ```
 
 Keep `.env` private. It is git-ignored; never commit it or paste its values into issues or logs.
@@ -417,7 +420,7 @@ Request and response bodies use camelCase JSON; enums are serialized as strings.
 | | `PATCH /api/seller/orders/{id}/confirm`, `PATCH /api/seller/orders/{id}/reject` | Seller |
 | | `GET /api/admin/orders`, `GET /api/admin/orders/{id}` | Admin |
 
-**PaymentService:** `POST /api/payments`, `GET /api/payments/{id}`, `POST /api/payments/webhook` (signature required).
+**PaymentService:** `POST /api/payments` and `GET /api/payments/{id}` require `X-Internal-Api-Key` with `PAYMENT_INTERNAL_API_KEY`. `POST /api/payments/webhook` uses the provider's HMAC signature instead.
 
 </details>
 
@@ -432,7 +435,7 @@ Use [Main API Swagger UI](http://localhost:8080/swagger) to explore routes and t
 1. **Administrator setup.** Sign in with the development administrator credentials from `.env` using `POST /api/auth/login`, then create a category with `POST /api/categories`.
 2. **Seller setup.** Register with `POST /api/auth/register`, confirm the email in [Mailpit](http://localhost:8025), then sign in. Create a profile with `POST /api/sellerprofiles`; replace the old Bearer token in your REST client with the returned `auth.accessToken` before calling seller-only routes such as `POST /api/products`.
 3. **Customer checkout.** Register and confirm a customer account, then sign in. Browse `GET /api/products`, add an item with `POST /api/carts/items`, and create an order with `POST /api/orders`. Find its id with `GET /api/orders`.
-4. **Payment.** Start payment with `POST /api/orders/{id}/pay`. Open the returned `paymentUrl` on FakePaymentProvider's browser checkout page and choose **Simulate Successful Payment**. In [PaymentService Swagger UI](http://localhost:8081/swagger), check `GET /api/payments/{id}` using the returned payment id; allow time for the API to consume the payment event, then check its logs.
+4. **Payment.** Start payment with `POST /api/orders/{id}/pay`. Open the returned `paymentUrl` on FakePaymentProvider's browser checkout page and choose **Simulate Successful Payment**. To inspect the payment directly, call PaymentService's `GET /api/payments/{id}` from a REST client with `X-Internal-Api-Key` set to your `PAYMENT_INTERNAL_API_KEY`; allow time for the API to consume the payment event, then check its logs.
 5. **Seller order confirmation (intended sequence).** After the payment succeeds and the API has processed its event, switch your REST client back to the seller JWT. Find the seller-order id with `GET /api/seller/orders`, then call `PATCH /api/seller/orders/{id}/confirm`. The code does not yet require payment before confirmation; this step follows the intended payment-first order, never a pending payment.
 6. **Alternative scenarios.** Simulate a failed checkout and retry payment; use **Retry Sending Result** on the provider page to replay a webhook. PaymentService validates webhook signatures and handles identical replays without creating a second result.
 

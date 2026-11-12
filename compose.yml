@@ -83,6 +83,7 @@ services:
       SeedAdmin__Email: ${SEED_ADMIN_EMAIL:?Set SEED_ADMIN_EMAIL in .env}
       SeedAdmin__Password: ${SEED_ADMIN_PASSWORD:?Set SEED_ADMIN_PASSWORD in .env}
       PaymentService__BaseUrl: http://payment-service:8080/
+      PaymentService__InternalApiKey: ${PAYMENT_INTERNAL_API_KEY:?Set PAYMENT_INTERNAL_API_KEY in .env}
     ports:
       - "127.0.0.1:${API_PORT:-8080}:8080"
     depends_on:
@@ -113,6 +114,7 @@ services:
       RabbitMq__ExchangeName: ecommerce.notifications
       FakePaymentProvider__BaseUrl: http://fake-payment-provider:8080/
       FakePaymentProvider__WebhookSecret: ${PAYMENT_WEBHOOK_SECRET:?Set PAYMENT_WEBHOOK_SECRET in .env}
+      PaymentService__InternalApiKey: ${PAYMENT_INTERNAL_API_KEY:?Set PAYMENT_INTERNAL_API_KEY in .env}
     ports:
       - "127.0.0.1:${PAYMENT_PORT:-8081}:8080"
     depends_on:

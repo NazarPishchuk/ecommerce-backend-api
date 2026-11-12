@@ -16,7 +16,8 @@ namespace ECommerce.PaymentService.Controllers;
 public class PaymentController(
     IPaymentService paymentService,
     PaymentWebhookService webhookService,
-    IOptions<FakePaymentProviderOptions> options) : ControllerBase
+    IOptions<FakePaymentProviderOptions> options,
+    IConfiguration configuration) : ControllerBase
 {
     private static readonly JsonSerializerOptions JsonOptions =
         new(JsonSerializerDefaults.Web);
@@ -26,6 +27,9 @@ public class PaymentController(
     [FromBody] CreatePaymentDto dto,
     CancellationToken cancellationToken)
     {
+        if (!HasValidInternalApiKey())
+            return Unauthorized();
+
         PaymentCreationResult result;
 
         try
@@ -81,6 +85,9 @@ public class PaymentController(
         Guid id,
         CancellationToken cancellationToken)
     {
+        if (!HasValidInternalApiKey())
+            return Unauthorized();
+
         var payment = await paymentService.GetPaymentAsync(
             id,
             cancellationToken);
@@ -194,5 +201,26 @@ public class PaymentController(
             _ => throw new InvalidOperationException(
                 "Unknown webhook processing result.")
         };
+    }
+
+    private bool HasValidInternalApiKey()
+    {
+        if (!Request.Headers.TryGetValue("X-Internal-Api-Key", out var values) ||
+            values.Count != 1 ||
+            string.IsNullOrEmpty(values[0]))
+        {
+            return false;
+        }
+
+        var expectedKey = configuration["PaymentService:InternalApiKey"];
+        if (string.IsNullOrEmpty(expectedKey))
+            return false;
+
+        var expectedHash = SHA256.HashData(Encoding.UTF8.GetBytes(expectedKey));
+        var receivedHash = SHA256.HashData(Encoding.UTF8.GetBytes(values[0]!));
+
+        return CryptographicOperations.FixedTimeEquals(
+            expectedHash,
+            receivedHash);
     }
 }

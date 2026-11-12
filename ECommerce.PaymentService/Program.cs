@@ -10,6 +10,10 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var internalApiKey = builder.Configuration["PaymentService:InternalApiKey"];
+if (string.IsNullOrWhiteSpace(internalApiKey) || internalApiKey.Length < 32)
+    throw new InvalidOperationException("PaymentService internal API key must be at least 32 characters.");
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {

@@ -149,6 +149,11 @@ builder.Services
     .AddDefaultTokenProviders();
 
 
+var paymentServiceInternalApiKey = builder.Configuration["PaymentService:InternalApiKey"];
+if (string.IsNullOrWhiteSpace(paymentServiceInternalApiKey) ||
+    paymentServiceInternalApiKey.Length < 32)
+    throw new InvalidOperationException("PaymentService internal API key must be at least 32 characters.");
+
 builder.Services.AddHttpClient<
     IOrderPaymentService,
     OrderPaymentService>(client =>
@@ -157,6 +162,9 @@ builder.Services.AddHttpClient<
             builder.Configuration["PaymentService:BaseUrl"]
             ?? throw new InvalidOperationException(
                 "PaymentService BaseUrl is not configured."));
+        client.DefaultRequestHeaders.Add(
+            "X-Internal-Api-Key",
+            paymentServiceInternalApiKey);
     });
 
 builder.Services
