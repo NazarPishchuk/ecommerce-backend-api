@@ -17,6 +17,10 @@ public interface ISellerProfileRepository
         int id,
         CancellationToken cancellationToken);
 
+    Task<bool> HasPendingSellerOrdersAsync(
+        int sellerProfileId,
+        CancellationToken cancellationToken);
+
     Task<IReadOnlyList<GetAdminSellerProfileDto>> GetAllForAdminAsync(
         CancellationToken cancellationToken);
 

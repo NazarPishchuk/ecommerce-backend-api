@@ -194,6 +194,16 @@ public class SellerProfileService(ISellerProfileRepository sellerProfileReposito
         SellerProfile sellerProfile,
         CancellationToken cancellationToken)
     {
+        if (await sellerProfileRepository.HasPendingSellerOrdersAsync(
+                sellerProfile.Id,
+                cancellationToken))
+        {
+            return Result.Failure(new Error(
+                "SellerProfile.HasPendingOrders",
+                ErrorType.Conflict,
+                "Seller profile cannot be deleted while it has pending orders."));
+        }
+
         await productRepository.DeactivateBySellerProfileIdAsync(
             sellerProfile.Id,
             cancellationToken);

@@ -1,6 +1,7 @@
 ﻿using ECommerce.Application.DTOs.Sellers;
 using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
+using ECommerce.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Persistence.Repositories;
@@ -40,6 +41,16 @@ public class SellerProfileRepository(ECommerceDbContext dbContext) : ISellerProf
             .FirstOrDefaultAsync(
                 x => x.Id == id,
                 cancellationToken);
+    }
+
+    public async Task<bool> HasPendingSellerOrdersAsync(
+        int sellerProfileId,
+        CancellationToken cancellationToken)
+    {
+        return await dbContext.SellerOrders.AnyAsync(
+            x => x.SellerProfileId == sellerProfileId &&
+                 x.Status == SellerOrderStatus.Pending,
+            cancellationToken);
     }
 
     public async Task<IReadOnlyList<GetAdminSellerProfileDto>> GetAllForAdminAsync(
