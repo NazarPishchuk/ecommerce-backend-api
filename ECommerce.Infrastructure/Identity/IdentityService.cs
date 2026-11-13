@@ -1,5 +1,6 @@
 ﻿using ECommerce.Application.Interfaces;
 using ECommerce.Application.Results;
+using ECommerce.Domain.Constants;
 using Microsoft.AspNetCore.Identity;
 
 namespace ECommerce.Infrastructure.Identity;
@@ -41,7 +42,7 @@ public sealed class IdentityService(
 
             return Result<string>.Failure(
                 new Error(
-                    "Identity.UserCreationFailed",
+                    IdentityErrorCodes.UserCreationFailed,
                     ErrorType.Validation,
                     errorMessage));
         }
@@ -56,7 +57,7 @@ public sealed class IdentityService(
 
             return Result<string>.Failure(
                 new Error(
-                    "Identity.RoleAssignmentFailed",
+                    IdentityErrorCodes.RoleAssignmentFailed,
                     ErrorType.Validation,
                     errorMessage));
         }
@@ -72,7 +73,7 @@ public sealed class IdentityService(
         {
             return Result<IReadOnlyCollection<string>>.Failure(
                 new Error(
-                    "Identity.UserNotFound",
+                    IdentityErrorCodes.UserNotFound,
                     ErrorType.NotFound,
                     "User was not found."));
         }
@@ -90,7 +91,7 @@ public sealed class IdentityService(
         {
             return Result<string>.Failure(
                 new Error(
-                    "Auth.InvalidCredentials",
+                    AuthErrorCodes.InvalidCredentials,
                     ErrorType.Unauthorized,
                     "Invalid email or password."));
         }
@@ -104,7 +105,7 @@ public sealed class IdentityService(
         {
             return Result<string>.Failure(
                 new Error(
-                    "Auth.AccountLocked",
+                    AuthErrorCodes.AccountLocked,
                     ErrorType.Forbidden,
                     "Account is temporarily locked."));
         }
@@ -113,7 +114,7 @@ public sealed class IdentityService(
         {
             return Result<string>.Failure(
                 new Error(
-                    "Auth.SignInNotAllowed",
+                    AuthErrorCodes.SignInNotAllowed,
                     ErrorType.Forbidden,
                     "Sign-in is not allowed for this account."));
         }
@@ -122,7 +123,7 @@ public sealed class IdentityService(
         {
             return Result<string>.Failure(
                 new Error(
-                    "Auth.InvalidCredentials",
+                    AuthErrorCodes.InvalidCredentials,
                     ErrorType.Unauthorized,
                     "Invalid email or password."));
         }
@@ -138,7 +139,7 @@ public sealed class IdentityService(
         {
             return Result<string>.Failure(
             new Error(
-                "Identity.UserNotFound",
+                IdentityErrorCodes.UserNotFound,
                 ErrorType.NotFound,
                 "User was not found."));
         }
@@ -156,7 +157,7 @@ public sealed class IdentityService(
         {
             return Result.Failure(
                 new Error(
-                    "Identity.UserNotFound",
+                    IdentityErrorCodes.UserNotFound,
                     ErrorType.NotFound,
                     "User was not found."));
         }
@@ -171,7 +172,7 @@ public sealed class IdentityService(
 
             return Result.Failure(
                 new Error(
-                    "Identity.EmailConfirmationFailed",
+                    IdentityErrorCodes.EmailConfirmationFailed,
                     ErrorType.Validation,
                     errorMessage));
         }
@@ -186,7 +187,7 @@ public sealed class IdentityService(
         {
             return Result<string>.Failure(
                 new Error(
-                    "Auth.UserNotFound",
+                    AuthErrorCodes.UserNotFound,
                     ErrorType.NotFound,
                     "User with this email was not found."));
         }
@@ -195,7 +196,7 @@ public sealed class IdentityService(
         {
             return Result<string>.Failure(
                 new Error(
-                    "Auth.EmailAlreadyConfirmed",
+                    AuthErrorCodes.EmailAlreadyConfirmed,
                     ErrorType.Conflict,
                     "Email is already confirmed."));
         }
@@ -211,7 +212,7 @@ public sealed class IdentityService(
         {
             return Result.Failure(
                 new Error(
-                    "Identity.UserNotFound",
+                    IdentityErrorCodes.UserNotFound,
                     ErrorType.NotFound,
                     "User was not found."));
         }
@@ -226,7 +227,7 @@ public sealed class IdentityService(
 
             return Result.Failure(
                 new Error(
-                    "Identity.RoleAssignmentFailed",
+                    IdentityErrorCodes.RoleAssignmentFailed,
                     ErrorType.Validation,
                     errorMessage));
         }
@@ -243,7 +244,7 @@ public sealed class IdentityService(
         if (user is null)
         {
             return Result.Failure(new Error(
-                "Identity.UserNotFound",
+                IdentityErrorCodes.UserNotFound,
                 ErrorType.NotFound,
                 "User was not found."));
         }
@@ -259,7 +260,7 @@ public sealed class IdentityService(
                 roleResult.Errors.Select(error => error.Description));
 
             return Result.Failure(new Error(
-                "Identity.RoleRemovalFailed",
+                IdentityErrorCodes.RoleRemovalFailed,
                 ErrorType.Validation,
                 errorMessage));
         }
@@ -274,7 +275,7 @@ public sealed class IdentityService(
         if(user is null)
         {
             return Result<string>.Failure(new Error(
-            "Identity.UserNotFound",
+            IdentityErrorCodes.UserNotFound,
             ErrorType.NotFound,
             "User was not found."));
         }
@@ -289,7 +290,7 @@ public sealed class IdentityService(
         if (user is null)
         {
             return Result<int>.Failure(new Error(
-                "Identity.UserNotFound",
+                IdentityErrorCodes.UserNotFound,
                 ErrorType.NotFound,
                 "User was not found."));
         }
@@ -304,7 +305,7 @@ public sealed class IdentityService(
         if (user is null)
         {
             return Result.Failure(new Error(
-                "Identity.UserNotFound",
+                IdentityErrorCodes.UserNotFound,
                 ErrorType.NotFound,
                 "User was not found."));
         }
@@ -320,7 +321,7 @@ public sealed class IdentityService(
                 updateResult.Errors.Select(error => error.Description));
 
             return Result.Failure(new Error(
-                "Identity.TokenVersionUpdateFailed",
+                IdentityErrorCodes.TokenVersionUpdateFailed,
                 ErrorType.Failure,
                 errors));
         }
@@ -335,7 +336,7 @@ public sealed class IdentityService(
         if (user is null)
         {
             return Result<bool>.Failure(new Error(
-                "Identity.UserNotFound",
+                IdentityErrorCodes.UserNotFound,
                 ErrorType.NotFound,
                 "User was not found."));
         }
@@ -350,7 +351,7 @@ public sealed class IdentityService(
         if (user is null)
         {
             return Result.Failure(new Error(
-                "Identity.UserNotFound",
+                IdentityErrorCodes.UserNotFound,
                 ErrorType.NotFound,
                 "User was not found."));
         }
@@ -366,7 +367,7 @@ public sealed class IdentityService(
                 updateResult.Errors.Select(error => error.Description));
 
             return Result.Failure(new Error(
-                "Identity.SellerBanFailed",
+                IdentityErrorCodes.SellerBanFailed,
                 ErrorType.Failure,
                 errors));
         }
@@ -381,7 +382,7 @@ public sealed class IdentityService(
         if (user is null)
         {
             return Result.Failure(new Error(
-                "Identity.UserNotFound",
+                IdentityErrorCodes.UserNotFound,
                 ErrorType.NotFound,
                 "User was not found."));
         }
@@ -397,7 +398,7 @@ public sealed class IdentityService(
                 updateResult.Errors.Select(error => error.Description));
 
             return Result.Failure(new Error(
-                "Identity.SellerUnbanFailed",
+                IdentityErrorCodes.SellerUnbanFailed,
                 ErrorType.Failure,
                 errors));
         }

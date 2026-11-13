@@ -4,6 +4,7 @@ using ECommerce.Application.Interfaces;
 using ECommerce.Application.Results;
 using ECommerce.Contracts.Messaging;
 using ECommerce.Domain.Entities;
+using ECommerce.Domain.Constants;
 
 namespace ECommerce.Application.Services;
 
@@ -22,7 +23,7 @@ public sealed class AuthService(
         {
             return Result<RegisterResponse>.Failure(
                 new Error(
-                    "Auth.EmailAlreadyExists",
+                    AuthErrorCodes.EmailAlreadyExists,
                     ErrorType.Conflict,
                     "User with this email already exists."));
         }
@@ -101,6 +102,9 @@ public sealed class AuthService(
 
         if (userIdResult.IsFailure)
         {
+            if (userIdResult.Error!.Code is AuthErrorCodes.UserNotFound or AuthErrorCodes.EmailAlreadyConfirmed)
+                return Result.Success();
+
             return Result.Failure(userIdResult.Error!);
         }
 
