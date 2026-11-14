@@ -194,6 +194,12 @@ public class SellerProfileService(ISellerProfileRepository sellerProfileReposito
         SellerProfile sellerProfile,
         CancellationToken cancellationToken)
     {
+        // Checkout must update stock on an active seller product before creating a SellerOrder.
+        // Deactivating products first holds their write locks until this transaction ends.
+        await productRepository.DeactivateBySellerProfileIdAsync(
+            sellerProfile.Id,
+            cancellationToken);
+
         if (await sellerProfileRepository.HasPendingSellerOrdersAsync(
                 sellerProfile.Id,
                 cancellationToken))
@@ -203,10 +209,6 @@ public class SellerProfileService(ISellerProfileRepository sellerProfileReposito
                 ErrorType.Conflict,
                 "Seller profile cannot be deleted while it has pending orders."));
         }
-
-        await productRepository.DeactivateBySellerProfileIdAsync(
-            sellerProfile.Id,
-            cancellationToken);
 
         await productRepository.DetachFromSellerProfileAsync(
             sellerProfile.Id,
